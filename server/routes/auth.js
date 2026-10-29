@@ -9,10 +9,10 @@ const { authenticateToken, JWT_SECRET } = require('../middleware/auth');
 const TONY_ADMIN_NUMBERS = [process.env.TONY_ADMIN_NUMBER || '224488', '224488', '3000', '1001'];
 const CAP_ADMIN_NUMBERS = [process.env.CAP_ADMIN_NUMBER || '224489', '1941', '1002'];
 
-// POST /api/auth/entry - Single entry point for Name vs Admin Number routing
-router.post('/entry', async (req, res) => {
+// POST /api/auth/entry and /api/auth/entry-login - Single entry point for Name vs Admin Number routing
+router.post(['/entry', '/entry-login'], async (req, res) => {
   try {
-    const rawInput = (req.body.input || req.body.nameOrNumber || '').trim();
+    const rawInput = String(req.body.input || req.body.nameOrNumber || req.body.name || req.body.entryInput || '').trim();
 
     if (!rawInput || rawInput.length < 2) {
       return res.status(400).json({ error: 'Please enter your name.' });

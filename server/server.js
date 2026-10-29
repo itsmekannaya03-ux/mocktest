@@ -1,6 +1,8 @@
 const http = require('http');
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
 const { Server } = require('socket.io');
 const dotenv = require('dotenv');
 
@@ -17,7 +19,7 @@ const adminRoutes = require('./routes/admin');
 const app = express();
 const server = http.createServer(app);
 
-// Socket.IO configuration
+// Socket.IO configuration with CORS support
 const io = new Server(server, {
   cors: {
     origin: '*',
@@ -35,7 +37,7 @@ setupProctorSocket(io);
 app.use(cors());
 app.use(express.json());
 
-// Routes
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/exams', examsRoutes);
 app.use('/api/attempts', attemptsRoutes);
@@ -48,6 +50,20 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+// Serve frontend static build if available (Unified fullstack deployment)
+const clientDistPath = path.resolve(__dirname, '../client/dist');
+if (fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath));
+  
+  // Catch-all route to serve React Single Page Application
+  app.get('*', (req, res) => {
+    if (req.originalUrl.startsWith('/api')) {
+      return res.status(404).json({ error: `API route ${req.originalUrl} not found` });
+    }
+    res.sendFile(path.join(clientDistPath, 'index.html'));
+  });
+}
 
 const PORT = process.env.PORT || 5000;
 

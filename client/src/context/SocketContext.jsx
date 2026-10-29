@@ -10,8 +10,9 @@ export function SocketProvider({ children }) {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    // In dev, with Vite proxy or direct to window.location.origin
-    const socketInstance = io('/', {
+    // In dev or unified deploy: uses '/', or explicit backend URL via VITE_API_URL
+    const backendUrl = (import.meta.env.VITE_API_URL || '').trim() || '/';
+    const socketInstance = io(backendUrl, {
       transports: ['websocket', 'polling'],
       reconnectionAttempts: 10,
       reconnectionDelay: 2000
