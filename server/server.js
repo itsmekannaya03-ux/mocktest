@@ -52,7 +52,8 @@ app.get('/api/health', (req, res) => {
 });
 
 // Serve frontend static build if available (Unified fullstack deployment)
-const clientDistPath = path.resolve(__dirname, '../client/dist');
+const rootDistPath = path.resolve(__dirname, '../dist');
+const clientDistPath = fs.existsSync(rootDistPath) ? rootDistPath : path.resolve(__dirname, '../client/dist');
 if (fs.existsSync(clientDistPath)) {
   app.use(express.static(clientDistPath));
   
