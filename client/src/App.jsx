@@ -58,8 +58,13 @@ function MainApp() {
   }
 
   // Handler: When user selects an exam from the dashboard
-  const handleSelectExam = async (exam) => {
-    setSelectedExam(exam);
+  const handleSelectExam = async (examSummary) => {
+    try {
+      const fullExam = await api.getExamById(examSummary._id);
+      setSelectedExam(fullExam);
+    } catch (err) {
+      setSelectedExam(examSummary);
+    }
     setCurrentView('exam-instructions');
   };
 
@@ -70,6 +75,12 @@ function MainApp() {
       setStartingExam(true);
       const res = await api.startAttempt(selectedExam._id);
       setActiveAttempt(res.attempt);
+      if (res.exam && res.exam.questions && res.exam.questions.length > 0) {
+        setSelectedExam(res.exam);
+      } else if (!selectedExam.questions || selectedExam.questions.length === 0) {
+        const fullExam = await api.getExamById(selectedExam._id);
+        setSelectedExam(fullExam);
+      }
       setCurrentView('exam-room');
     } catch (err) {
       alert(`Could not start exam: ${err.message}`);

@@ -54,9 +54,34 @@ router.post('/start', authenticateToken, async (req, res) => {
       }
 
       // Resume active attempt
+      const orderedQuestions = [];
+      const qMap = new Map((exam.questions || []).map(q => [q.id, q]));
+      if (Array.isArray(existingAttempt.questionOrder) && existingAttempt.questionOrder.length > 0) {
+        for (const qid of existingAttempt.questionOrder) {
+          if (qMap.has(qid)) orderedQuestions.push(qMap.get(qid));
+        }
+      }
+      for (const q of (exam.questions || [])) {
+        if (!orderedQuestions.some(oq => oq.id === q.id)) orderedQuestions.push(q);
+      }
+
+      const sanitizedResumed = orderedQuestions.map((q, idx) => ({
+        id: q.id || `q_${idx}`,
+        questionText: q.questionText,
+        options: q.options || ['Option A', 'Option B', 'Option C', 'Option D']
+      }));
+
       return res.json({
         attempt: existingAttempt,
-        resumed: true
+        resumed: true,
+        exam: {
+          _id: exam._id,
+          title: exam.title,
+          code: exam.code,
+          durationMinutes: exam.durationMinutes,
+          marksPerQuestion: exam.marksPerQuestion,
+          questions: sanitizedResumed
+        }
       });
     }
 
@@ -98,9 +123,23 @@ router.post('/start', authenticateToken, async (req, res) => {
       });
     }
 
+    const sanitizedQuestions = candidateQuestions.map((q, idx) => ({
+      id: q.id || `q_${idx}`,
+      questionText: q.questionText,
+      options: q.options || ['Option A', 'Option B', 'Option C', 'Option D']
+    }));
+
     res.status(201).json({
       attempt: newAttempt,
-      resumed: false
+      resumed: false,
+      exam: {
+        _id: exam._id,
+        title: exam.title,
+        code: exam.code,
+        durationMinutes: exam.durationMinutes,
+        marksPerQuestion: exam.marksPerQuestion,
+        questions: sanitizedQuestions
+      }
     });
   } catch (err) {
     console.error('Start attempt error:', err);

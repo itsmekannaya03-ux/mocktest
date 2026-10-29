@@ -23,6 +23,130 @@ function shuffleForUser(array, seedStr = '') {
   return arr;
 }
 
+// Robust AI & Text Question Parser supporting various formats: (a)/(b), Q1/Q2, numbers, or unnumbered blocks
+function parseAiQuestionsText(rawText) {
+  if (!rawText || typeof rawText !== 'string' || !rawText.trim()) return [];
+  const lines = rawText.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  const questions = [];
+  let currentQ = null;
+
+  function finalizeCurrentQ() {
+    if (currentQ && currentQ.questionText && currentQ.questionText.trim()) {
+      while (currentQ.options.length < 4) {
+        currentQ.options.push('Option ' + String.fromCharCode(65 + currentQ.options.length));
+      }
+      currentQ.options = currentQ.options.slice(0, 4);
+      questions.push({
+        id: uuidv4(),
+        questionText: currentQ.questionText.trim(),
+        options: currentQ.options,
+        correctOptionIndex: currentQ.correctOptionIndex >= 0 ? currentQ.correctOptionIndex : 0,
+        explanation: currentQ.explanation.trim() || 'No technical explanation provided.',
+        revisionConcept: currentQ.revisionConcept.trim() || 'Team Knowledge'
+      });
+    }
+  }
+
+  for (let rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    // 1. Answer indicator
+    const ansMatch = line.match(/^(?:(?:[Cc]orrect\s*[Aa]nswer|[Aa]nswer|[Aa]ns|[Cc]orrect|[Kk]ey)[\s.:-]+)\s*\(?([A-Da-d1-4])\)?/i);
+    if (ansMatch && currentQ) {
+      const char = ansMatch[1].toUpperCase();
+      const map = { 'A': 0, '1': 0, 'B': 1, '2': 1, 'C': 2, '3': 2, 'D': 3, '4': 3 };
+      currentQ.correctOptionIndex = map[char] !== undefined ? map[char] : 0;
+      continue;
+    }
+
+    // 2. Explanation / Concept
+    const expMatch = line.match(/^(?:(?:[Ee]xplanation|[Rr]ationale|[Nn]ote|[Rr]eason)[\s.:-]+)(.*)/i);
+    if (expMatch && currentQ) {
+      currentQ.explanation = expMatch[1].trim();
+      continue;
+    }
+    const conceptMatch = line.match(/^(?:(?:[Cc]oncept|[Tt]opic|[Rr]evise)[\s.:-]+)(.*)/i);
+    if (conceptMatch && currentQ) {
+      currentQ.revisionConcept = conceptMatch[1].trim();
+      continue;
+    }
+
+    // 3. Option line: (a) or (A) or a) or A) or a. or A. or [a] or [A]
+    const optMatch = line.match(/^(?:(?:\(?([A-Da-d])\)?[.:\s-]+)|(?:\[([A-Da-d])\][\s.:-]*))(.*)/);
+    if (optMatch && currentQ) {
+      let optText = (optMatch[3] !== undefined ? optMatch[3] : '').trim();
+      if (optText.includes('(Correct)') || optText.includes('*')) {
+        currentQ.correctOptionIndex = currentQ.options.length;
+        optText = optText.replace(/\(Correct\)/gi, '').replace(/\*/g, '').trim();
+      }
+      currentQ.options.push(optText || ('Option ' + String.fromCharCode(65 + currentQ.options.length)));
+      continue;
+    }
+
+    // 4. Question start: "Q39. ...", "Q1: ...", "1. ...", "Question 1: ..."
+    const qMatch = line.match(/^(?:(?:[Qq]uestion\s*\d+|Q\d+|\d+)[\s.:)-]+)(.*)/i);
+    if (qMatch) {
+      finalizeCurrentQ();
+      currentQ = {
+        questionText: qMatch[1].trim(),
+        options: [],
+        correctOptionIndex: 0,
+        explanation: '',
+        revisionConcept: ''
+      };
+      continue;
+    }
+
+    // If no active question, current line starts the first question
+    if (!currentQ) {
+      currentQ = {
+        questionText: line,
+        options: [],
+        correctOptionIndex: 0,
+        explanation: '',
+        revisionConcept: ''
+      };
+      continue;
+    }
+
+    // If current question already has options collected and next line is not an option/answer, it's a new question!
+    if (currentQ.options.length >= 2 && !optMatch && !ansMatch) {
+      finalizeCurrentQ();
+      currentQ = {
+        questionText: line,
+        options: [],
+        correctOptionIndex: 0,
+        explanation: '',
+        revisionConcept: ''
+      };
+      continue;
+    }
+
+    // Otherwise append to questionText or explanation
+    if (currentQ.options.length === 0) {
+      currentQ.questionText += ' ' + line;
+    } else {
+      currentQ.explanation = (currentQ.explanation ? currentQ.explanation + ' ' : '') + line;
+    }
+  }
+
+  finalizeCurrentQ();
+
+  if (questions.length === 0) {
+    questions.push({
+      id: uuidv4(),
+      questionText: rawText.slice(0, 150).trim(),
+      options: ['Option A', 'Option B', 'Option C', 'Option D'],
+      correctOptionIndex: 0,
+      explanation: 'Auto-formatted question block.',
+      revisionConcept: 'Team Knowledge'
+    });
+  }
+
+  return questions;
+}
+
 // POST /api/exams/ai-parse - Bulk paste questions & intelligent auto-formatter
 router.post('/ai-parse', authenticateToken, requireAdmin, async (req, res) => {
   try {
@@ -31,105 +155,7 @@ router.post('/ai-parse', authenticateToken, requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Please provide raw questions text to parse.' });
     }
 
-    const lines = rawText.split('\n');
-    const questions = [];
-    let currentQ = null;
-
-    function finalizeCurrentQ() {
-      if (currentQ && (currentQ.questionText || currentQ.prompt) && (currentQ.questionText.trim() || currentQ.prompt.trim())) {
-        const text = (currentQ.questionText || currentQ.prompt).trim();
-        // Ensure options array has at least 4 options
-        while (currentQ.options.length < 4) {
-          currentQ.options.push(`Option ${String.fromCharCode(65 + currentQ.options.length)}`);
-        }
-        currentQ.options = currentQ.options.slice(0, 4);
-        questions.push({
-          id: uuidv4(),
-          questionText: text,
-          prompt: text,
-          options: currentQ.options,
-          correctOptionIndex: currentQ.correctOptionIndex,
-          explanation: currentQ.explanation.trim() || 'No technical explanation provided.',
-          revisionConcept: currentQ.revisionConcept.trim() || 'Team Knowledge'
-        });
-      }
-    }
-
-    for (let rawLine of lines) {
-      const line = rawLine.trim();
-      if (!line) continue;
-
-      // Check for Answer line: e.g. "Answer: B", "Ans: C", "Correct: A", "Key: B"
-      const ansMatch = line.match(/^(?:(?:[Aa]nswer|[Aa]ns|[Cc]orrect|[Kk]ey)[\s.:-]+)\s*\(?([A-Da-d1-4])\)?/i);
-
-      // Check for Explanation line: e.g. "Explanation: ...", "Rationale: ..."
-      const expMatch = line.match(/^(?:(?:[Ee]xplanation|[Rr]ationale|[Nn]ote|[Rr]eason)[\s.:-]+)(.*)/i);
-
-      // Check for Concept line: e.g. "Concept: ...", "Topic: ..."
-      const conceptMatch = line.match(/^(?:(?:[Cc]oncept|[Tt]opic|[Rr]evise)[\s.:-]+)(.*)/i);
-
-      // Check for Option start: strictly letters A-D / a-d: e.g. "A)", "A.", "(A)", "[A]", "A - "
-      const optMatch = line.match(/^(?:(?:\(?([A-Da-d])\)?[.:\s-]+)|(?:\[([A-Da-d])\][\s.:-]*))(.*)/i);
-
-      // Check for Question start: e.g. "1.", "1)", "Q1:", "Question 1:", "1 - "
-      const qStartMatch = line.match(/^(?:(?:[Qq]uestion\s*\d+|Q\d+|\d+)[\s.:)-]+)(.*)/i);
-
-      if (ansMatch && currentQ) {
-        const val = ansMatch[1].toUpperCase();
-        let idx = 0;
-        if (['A', '1'].includes(val)) idx = 0;
-        else if (['B', '2'].includes(val)) idx = 1;
-        else if (['C', '3'].includes(val)) idx = 2;
-        else if (['D', '4'].includes(val)) idx = 3;
-        currentQ.correctOptionIndex = idx;
-      } else if (expMatch && currentQ) {
-        currentQ.explanation = expMatch[1].trim();
-      } else if (conceptMatch && currentQ) {
-        currentQ.revisionConcept = conceptMatch[1].trim();
-      } else if (optMatch && currentQ) {
-        let optText = (optMatch[3] !== undefined ? optMatch[3] : '').trim();
-        // Check if option line has an indicator like (Correct) or *
-        if (optText.includes('(Correct)') || optText.includes('*') || optText.startsWith('*')) {
-          currentQ.correctOptionIndex = currentQ.options.length;
-          optText = optText.replace(/\(Correct\)/gi, '').replace(/\*/g, '').trim();
-        }
-        currentQ.options.push(optText || `Option ${String.fromCharCode(65 + currentQ.options.length)}`);
-      } else if (qStartMatch) {
-        finalizeCurrentQ();
-        currentQ = {
-          questionText: qStartMatch[1].trim(),
-          prompt: qStartMatch[1].trim(),
-          options: [],
-          correctOptionIndex: 0,
-          explanation: '',
-          revisionConcept: ''
-        };
-      } else {
-        // Continuation of current question or explanation
-        if (currentQ) {
-          if (currentQ.options.length === 0) {
-            currentQ.questionText += ' ' + line;
-            currentQ.prompt = currentQ.questionText;
-          } else if (currentQ.explanation) {
-            currentQ.explanation += ' ' + line;
-          }
-        }
-      }
-    }
-
-    finalizeCurrentQ();
-
-    if (questions.length === 0) {
-      // Fallback: create at least 1 question from text
-      questions.push({
-        id: uuidv4(),
-        questionText: rawText.slice(0, 150).trim(),
-        options: ['Option A', 'Option B', 'Option C', 'Option D'],
-        correctOptionIndex: 0,
-        explanation: 'Auto-formatted question block.',
-        revisionConcept: 'Team Knowledge'
-      });
-    }
+    const questions = parseAiQuestionsText(rawText);
 
     res.json({
       success: true,

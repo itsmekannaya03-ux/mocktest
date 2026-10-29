@@ -14,20 +14,34 @@ import {
   ShieldAlert, 
   Send,
   Eye,
-  Info
+  Info,
+  Loader2
 } from 'lucide-react';
 import QuestionPalette from '../components/QuestionPalette';
 import ViolationModal from '../components/ViolationModal';
-import WebcamPreview from '../components/WebcamPreview';
 
 export default function ExamRoom({ exam, attempt, onExamFinished }) {
   const { user } = useAuth();
   const { socket } = useSocket();
 
   // Questions and active index
-  const questions = exam.questions || [];
+  const [examData, setExamData] = useState(exam);
+  const questions = examData.questions || exam.questions || [];
   const totalQuestions = questions.length;
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Self-healing: if questions not passed in, load them immediately from API
+  useEffect(() => {
+    if (!questions || questions.length === 0) {
+      api.getExamById(exam._id || attempt.examId)
+        .then(full => {
+          if (full && Array.isArray(full.questions) && full.questions.length > 0) {
+            setExamData(full);
+          }
+        })
+        .catch(err => console.warn('ExamRoom fallback question load error:', err.message));
+    }
+  }, [exam._id, attempt.examId, questions.length]);
 
   // Examination state
   const [answers, setAnswers] = useState(attempt.answers || {});
@@ -485,80 +499,102 @@ export default function ExamRoom({ exam, attempt, onExamFinished }) {
           
           <div className="rounded-2xl bg-[#0f172a]/90 backdrop-blur-md border border-slate-800 p-6 sm:p-8 shadow-xl flex-1 flex flex-col">
             
-            {/* Question Header & Action bar */}
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-6">
-              <div className="flex items-center space-x-2">
-                <span className="px-3 py-1 rounded-lg bg-cyan-950 border border-cyan-800 text-cyan-300 font-mono font-bold text-xs">
-                  Question {currentIndex + 1}
-                </span>
-                <span className="text-xs text-slate-400 font-mono">
-                  of {totalQuestions}
-                </span>
-              </div>
-
-              <div className="flex items-center space-x-2">
+            {totalQuestions === 0 ? (
+              <div className="flex-1 flex flex-col items-center justify-center p-12 text-center my-auto">
+                <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mb-3" />
+                <h3 className="text-sm font-bold text-white mb-1">Loading Examination Questions...</h3>
+                <p className="text-xs text-slate-400 max-w-sm">
+                  Synchronizing allocated questions with the assessment engine. If questions do not appear within a few seconds, click below to refresh.
+                </p>
                 <button
-                  onClick={handleToggleFlag}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all ${
-                    isCurrentFlagged 
-                      ? 'bg-purple-600 text-white shadow-md shadow-purple-500/20' 
-                      : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700'
-                  }`}
+                  onClick={() => {
+                    api.getExamById(exam._id || attempt.examId)
+                      .then(full => full?.questions && setExamData(full))
+                      .catch(() => {});
+                  }}
+                  className="mt-4 px-4 py-1.5 rounded-lg bg-cyan-950 border border-cyan-800 text-cyan-300 text-xs font-bold hover:bg-cyan-900 transition-colors"
                 >
-                  <Bookmark className="w-3.5 h-3.5" />
-                  <span>{isCurrentFlagged ? 'Flagged for Review' : 'Mark for Review'}</span>
+                  Force Reload Questions
                 </button>
-
-                {currentSelectedOption !== undefined && (
-                  <button
-                    onClick={handleClearAnswer}
-                    className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border border-slate-700 transition-colors"
-                    title="Clear selected answer"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                  </button>
-                )}
               </div>
-            </div>
-
-            {/* Question Text */}
-            <div className="mb-8">
-              <h2 className="text-base sm:text-lg font-semibold text-slate-100 leading-relaxed">
-                {currentQ.questionText}
-              </h2>
-            </div>
-
-            {/* 4 Multiple Choice Options */}
-            <div className="space-y-3 flex-1">
-              {(currentQ.options || []).map((opt, optIdx) => {
-                const isSelected = currentSelectedOption === optIdx;
-                const optionLetter = String.fromCharCode(65 + optIdx); // A, B, C, D
-
-                return (
-                  <div
-                    key={optIdx}
-                    onClick={() => handleSelectOption(optIdx)}
-                    className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start space-x-3.5 group ${
-                      isSelected
-                        ? 'bg-cyan-950/40 border-cyan-400 text-white shadow-md shadow-cyan-500/10'
-                        : 'bg-slate-900/80 hover:bg-slate-800/80 border-slate-800 hover:border-slate-700 text-slate-300'
-                    }`}
-                  >
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-mono font-bold text-xs shrink-0 transition-all ${
-                      isSelected
-                        ? 'bg-cyan-400 text-slate-950'
-                        : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-slate-200'
-                    }`}>
-                      {optionLetter}
-                    </div>
-
-                    <div className="text-xs sm:text-sm font-medium pt-0.5 leading-relaxed">
-                      {opt}
-                    </div>
+            ) : (
+              <>
+                {/* Question Header & Action bar */}
+                <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-6">
+                  <div className="flex items-center space-x-2">
+                    <span className="px-3 py-1 rounded-lg bg-cyan-950 border border-cyan-800 text-cyan-300 font-mono font-bold text-xs">
+                      Question {currentIndex + 1}
+                    </span>
+                    <span className="text-xs text-slate-400 font-mono">
+                      of {totalQuestions}
+                    </span>
                   </div>
-                );
-              })}
-            </div>
+
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={handleToggleFlag}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all ${
+                        isCurrentFlagged 
+                          ? 'bg-purple-600 text-white shadow-md shadow-purple-500/20' 
+                          : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700'
+                      }`}
+                    >
+                      <Bookmark className="w-3.5 h-3.5" />
+                      <span>{isCurrentFlagged ? 'Flagged for Review' : 'Mark for Review'}</span>
+                    </button>
+
+                    {currentSelectedOption !== undefined && (
+                      <button
+                        onClick={handleClearAnswer}
+                        className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border border-slate-700 transition-colors"
+                        title="Clear selected answer"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Question Text */}
+                <div className="mb-8">
+                  <h2 className="text-base sm:text-lg font-semibold text-slate-100 leading-relaxed">
+                    {currentQ.questionText}
+                  </h2>
+                </div>
+
+                {/* 4 Multiple Choice Options */}
+                <div className="space-y-3 flex-1">
+                  {(currentQ.options || []).map((opt, optIdx) => {
+                    const isSelected = currentSelectedOption === optIdx;
+                    const optionLetter = String.fromCharCode(65 + optIdx); // A, B, C, D
+
+                    return (
+                      <div
+                        key={optIdx}
+                        onClick={() => handleSelectOption(optIdx)}
+                        className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start space-x-3.5 group ${
+                          isSelected
+                            ? 'bg-cyan-950/40 border-cyan-400 text-white shadow-md shadow-cyan-500/10'
+                            : 'bg-slate-900/80 hover:bg-slate-800/80 border-slate-800 hover:border-slate-700 text-slate-300'
+                        }`}
+                      >
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-mono font-bold text-xs shrink-0 transition-all ${
+                          isSelected
+                            ? 'bg-cyan-400 text-slate-950'
+                            : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-slate-200'
+                        }`}>
+                          {optionLetter}
+                        </div>
+
+                        <div className="text-xs sm:text-sm font-medium pt-0.5 leading-relaxed">
+                          {opt}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
 
             {/* Navigation & Submit Buttons */}
             <div className="pt-6 mt-6 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
@@ -619,8 +655,16 @@ export default function ExamRoom({ exam, attempt, onExamFinished }) {
             />
           </div>
 
-          {/* Local Webcam Preview */}
-          <WebcamPreview />
+          {/* Anti-Cheat Proctor Sentinel Card (Zero Camera Required) */}
+          <div className="bg-[#0f172a]/90 backdrop-blur-md border border-slate-800 rounded-2xl p-4 shadow-lg">
+            <div className="flex items-center space-x-2 text-xs font-bold text-slate-300 mb-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Anti-Cheat Sentinel Active</span>
+            </div>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Monitoring active window state. Tab switches and loss of focus are automatically logged and will terminate unauthorized attempts.
+            </p>
+          </div>
 
         </div>
 

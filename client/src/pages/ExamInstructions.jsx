@@ -9,15 +9,12 @@ import {
   Check, 
   ArrowLeft, 
   ArrowRight,
-  ShieldCheck,
-  Eye
+  ShieldCheck
 } from 'lucide-react';
-import WebcamPreview from '../components/WebcamPreview';
 import DisclaimerBanner from '../components/DisclaimerBanner';
 
 export default function ExamInstructions({ exam, onBack, onStartExam, loading }) {
   const [agreed, setAgreed] = useState(false);
-  const [enableCamera, setEnableCamera] = useState(false);
 
   if (!exam) return null;
 
@@ -139,33 +136,6 @@ export default function ExamInstructions({ exam, onBack, onStartExam, loading })
                 <li key={i}>{inst}</li>
               ))}
             </ul>
-          </div>
-        )}
-      </div>
-
-      {/* Optional Webcam Preview Check */}
-      <div className="rounded-2xl bg-[#0f172a]/90 border border-slate-800 p-6 space-y-3 shadow-xl">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Eye className="w-4 h-4 text-cyan-400" />
-            <h3 className="text-sm font-bold text-white">
-              Optional Proctor Camera Preview
-            </h3>
-          </div>
-          <label className="flex items-center space-x-2 cursor-pointer text-xs text-slate-300">
-            <input
-              type="checkbox"
-              checked={enableCamera}
-              onChange={(e) => setEnableCamera(e.target.checked)}
-              className="rounded bg-slate-900 border-slate-700 text-cyan-500 focus:ring-0"
-            />
-            <span>Enable Camera Test</span>
-          </label>
-        </div>
-
-        {enableCamera && (
-          <div className="max-w-xs mt-3">
-            <WebcamPreview />
           </div>
         )}
       </div>

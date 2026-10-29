@@ -1,1 +1,30 @@
-[]
+[
+  {
+    "_id": "466ba092-00ef-4d8f-88a4-b97bf9257b8c",
+    "createdAt": "2026-10-29T08:01:58.461Z",
+    "updatedAt": "2026-10-29T08:01:58.461Z",
+    "attemptId": "a02dbdb7-e864-4b29-a187-82af9e688a3d",
+    "userId": "8c80507a-cbd0-4e14-bec6-2bf29c36298d",
+    "userName": "kannya",
+    "examId": "45eb8686-eedb-4b41-a409-1db3b3851a22",
+    "examTitle": "Team Mock Assessment",
+    "type": "Tab Switch Detected",
+    "details": "The exam window was hidden or another application tab was selected.",
+    "count": 1,
+    "timestamp": "2026-10-29T08:01:58.460Z"
+  },
+  {
+    "_id": "e0cb8d9c-394a-48bf-b1d1-4c217f4c0a39",
+    "createdAt": "2026-10-29T08:19:19.866Z",
+    "updatedAt": "2026-10-29T08:19:19.866Z",
+    "attemptId": "1659dd8e-49cb-4a96-960e-223d41e9d700",
+    "userId": "0c61afe3-e5e8-44ea-94d3-63ff71d26859",
+    "userName": "Rishith",
+    "examId": "97f3b218-18ca-448e-a5a6-e59a60d8df55",
+    "examTitle": "IRIS Cybersecurity Evaluation",
+    "type": "Tab Switch Detected",
+    "details": "The candidate switched to another browser tab or minimized window.",
+    "count": 1,
+    "timestamp": "2026-10-29T08:19:19.865Z"
+  }
+]

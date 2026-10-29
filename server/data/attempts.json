@@ -1,1 +1,74 @@
-[]
+[
+  {
+    "_id": "1659dd8e-49cb-4a96-960e-223d41e9d700",
+    "createdAt": "2026-10-29T08:19:19.860Z",
+    "updatedAt": "2026-10-29T08:19:19.869Z",
+    "userId": "0c61afe3-e5e8-44ea-94d3-63ff71d26859",
+    "userName": "Rishith",
+    "userBadgeId": "IRIS-MEMBER-655",
+    "examId": "97f3b218-18ca-448e-a5a6-e59a60d8df55",
+    "examTitle": "IRIS Cybersecurity Evaluation",
+    "examCode": "IRIS-288",
+    "status": "terminated",
+    "isCheated": true,
+    "questionOrder": [
+      "146dc0c2-4898-4a9a-b2f4-fce1f9253741",
+      "3930ffe5-40f3-448c-8469-fa624965666b"
+    ],
+    "startedAt": "2026-10-29T08:19:19.859Z",
+    "submittedAt": "2026-10-29T08:19:19.868Z",
+    "answers": {},
+    "flagged": [],
+    "violationsCount": 1,
+    "violationsLog": [
+      {
+        "type": "Tab Switch Detected",
+        "details": "The candidate switched to another browser tab or minimized window.",
+        "timestamp": "2026-10-29T08:19:19.865Z",
+        "count": 1
+      }
+    ],
+    "score": 0,
+    "maxMarks": 8,
+    "timeSpentSeconds": 0,
+    "terminatedReason": "The candidate switched to another browser tab or minimized window.",
+    "percentage": 0,
+    "accuracy": 0,
+    "correctCount": 0,
+    "incorrectCount": 0,
+    "unansweredCount": 2
+  },
+  {
+    "_id": "6ff35fb2-8a52-4522-8e01-cef5a944d347",
+    "createdAt": "2026-10-29T08:19:19.882Z",
+    "updatedAt": "2026-10-29T08:19:19.909Z",
+    "userId": "b86c0adb-5f5f-40e7-849a-114dd447cd47",
+    "userName": "Arjun",
+    "userBadgeId": "IRIS-MEMBER-389",
+    "examId": "97f3b218-18ca-448e-a5a6-e59a60d8df55",
+    "examTitle": "IRIS Cybersecurity Evaluation",
+    "examCode": "IRIS-288",
+    "status": "submitted",
+    "isCheated": false,
+    "questionOrder": [
+      "146dc0c2-4898-4a9a-b2f4-fce1f9253741",
+      "3930ffe5-40f3-448c-8469-fa624965666b"
+    ],
+    "startedAt": "2026-10-29T08:19:19.881Z",
+    "submittedAt": "2026-10-29T08:19:19.906Z",
+    "answers": {},
+    "flagged": [],
+    "violationsCount": 0,
+    "violationsLog": [],
+    "score": 0,
+    "maxMarks": 8,
+    "timeSpentSeconds": 0,
+    "terminatedReason": null,
+    "stoppedByAdmin": true,
+    "percentage": 0,
+    "accuracy": 0,
+    "correctCount": 0,
+    "incorrectCount": 0,
+    "unansweredCount": 2
+  }
+]

@@ -55,3 +55,4 @@ const entryCode = `export default function handler(req, res) {
 });
 
 console.log('✓ Universal build finished successfully across root, client, and server.');
+

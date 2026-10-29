@@ -154,5 +154,17 @@
     "role": "student",
     "clearance": "Level 3 - Operative",
     "badgeId": "IRIS-MEMBER-599"
+  },
+  {
+    "_id": "8c80507a-cbd0-4e14-bec6-2bf29c36298d",
+    "createdAt": "2026-10-29T08:00:45.215Z",
+    "updatedAt": "2026-10-29T08:00:45.215Z",
+    "name": "kannya",
+    "alias": "IRIS Operative",
+    "email": "kannya.958@iris.shield",
+    "password": "$2b$10$UxGXWz3eeQTYbZbB3nfysu1p01bDFcaWZ3kLt5uS7z2KvbMqHHEyO",
+    "role": "student",
+    "clearance": "Level 3 - Operative",
+    "badgeId": "IRIS-MEMBER-958"
   }
 ]
