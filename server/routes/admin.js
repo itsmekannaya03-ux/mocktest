@@ -331,4 +331,42 @@ router.post('/reset-attempt', async (req, res) => {
   }
 });
 
+// DELETE /api/admin/players/:id - Remove player / candidate from the roster
+router.delete('/players/:id', async (req, res) => {
+  try {
+    const playerId = req.params.id;
+    const player = await db.Users.findById(playerId);
+    if (!player) {
+      return res.status(404).json({ error: 'Player record not found.' });
+    }
+
+    // Protect administrator command accounts
+    if (player.role === 'admin' || player.email === 'tony@iris.shield' || player.email === 'cap@iris.shield') {
+      return res.status(403).json({ error: 'Command Bridge Administrator accounts cannot be removed.' });
+    }
+
+    // Delete user
+    await db.Users.deleteOne(playerId);
+
+    // Clean up attempts and violations for this candidate
+    const attempts = await db.Attempts.find({ userId: playerId });
+    for (const a of attempts) {
+      await db.Attempts.deleteOne(a._id);
+    }
+    const violations = await db.Violations.find({ userId: playerId });
+    for (const v of violations) {
+      await db.Violations.deleteOne(v._id);
+    }
+
+    res.json({
+      success: true,
+      message: `Player "${player.name}" has been removed from the examination roster.`,
+      playerId
+    });
+  } catch (err) {
+    console.error('Delete player error:', err);
+    res.status(500).json({ error: 'Failed to remove player.' });
+  }
+});
+
 module.exports = router;

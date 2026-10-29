@@ -26,5 +26,33 @@
     "details": "The candidate switched to another browser tab or minimized window.",
     "count": 1,
     "timestamp": "2026-10-29T08:19:19.865Z"
+  },
+  {
+    "_id": "e6419ffd-f98b-4f0c-97eb-edd2d5e33e7f",
+    "createdAt": "2026-10-29T08:51:20.055Z",
+    "updatedAt": "2026-10-29T08:51:20.055Z",
+    "attemptId": "cfb810bf-54a1-4798-ae39-18f8a19fbb54",
+    "userId": "0c61afe3-e5e8-44ea-94d3-63ff71d26859",
+    "userName": "Rishith",
+    "examId": "198cb461-c18e-4dcf-9901-2f1699414c0d",
+    "examTitle": "IRIS Cybersecurity Evaluation",
+    "type": "Tab Switch Detected",
+    "details": "The candidate switched to another browser tab or minimized window.",
+    "count": 1,
+    "timestamp": "2026-10-29T08:51:20.054Z"
+  },
+  {
+    "_id": "d2a68ea8-c0e1-42c5-b9d7-dfe2bdf45325",
+    "createdAt": "2026-10-29T08:52:32.651Z",
+    "updatedAt": "2026-10-29T08:52:32.651Z",
+    "attemptId": "f0b96c77-b82f-4786-bdc5-3fdcf2925c1e",
+    "userId": "0c61afe3-e5e8-44ea-94d3-63ff71d26859",
+    "userName": "Rishith",
+    "examId": "2d26ca21-d114-405a-96ac-f3cf68ce5c83",
+    "examTitle": "IRIS Cybersecurity Evaluation",
+    "type": "Tab Switch Detected",
+    "details": "The candidate switched to another browser tab or minimized window.",
+    "count": 1,
+    "timestamp": "2026-10-29T08:52:32.649Z"
   }
 ]

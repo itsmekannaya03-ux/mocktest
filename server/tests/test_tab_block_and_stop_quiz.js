@@ -158,10 +158,10 @@ async function run() {
   const student2Result = await callApi('GET', `/api/attempts/${attempt2Id}/result`, {}, { authorization: `Bearer ${student2Token}` });
   console.log('10. Student 2 Auto-Submitted on Stop Quiz:', student2Result.status === 200 && student2Result.data.status === 'submitted' ? 'PASS' : 'FAIL');
 
-  // 10.1 Verify Student 2 Result DOES NOT reveal correct answers to candidate!
+  // 10.1 Verify Student 2 Result reveals correct answers to candidate upon submission
   const student2Mistakes = student2Result.data.mistakeAnalysis || [];
   const candidateSeesAnswers = student2Mistakes.some(m => m.correctOptionIndex !== undefined || m.correctOptionText !== undefined);
-  console.log('10.1 Candidate Result (NO CORRECT ANSWERS REVEALED):', !candidateSeesAnswers ? 'PASS' : 'FAIL');
+  console.log('10.1 Candidate Result (CORRECT ANSWERS REVEALED ON SUBMISSION):', candidateSeesAnswers ? 'PASS' : 'FAIL');
 
   // 11. Admin Overview: Cheated list shows Rishith by name and count
   const adminOverview = await callApi('GET', '/api/admin/overview', {}, { authorization: `Bearer ${adminToken}` });

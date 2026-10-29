@@ -71,5 +71,6 @@ export const api = {
   getViolationsLog: () => apiRequest('/admin/violations-log'),
   forceTerminate: (attemptId, reason) => apiRequest('/admin/force-terminate', { method: 'POST', body: JSON.stringify({ attemptId, reason }) }),
   warnStudent: (attemptId, message) => apiRequest('/admin/warn-student', { method: 'POST', body: JSON.stringify({ attemptId, message }) }),
-  resetAttempt: (attemptId) => apiRequest('/admin/reset-attempt', { method: 'POST', body: JSON.stringify({ attemptId }) })
+  resetAttempt: (attemptId) => apiRequest('/admin/reset-attempt', { method: 'POST', body: JSON.stringify({ attemptId }) }),
+  removePlayer: (playerId) => apiRequest(`/admin/players/${playerId}`, { method: 'DELETE' })
 };

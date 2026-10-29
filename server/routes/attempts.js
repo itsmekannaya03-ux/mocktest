@@ -413,59 +413,40 @@ router.get('/:id/result', authenticateToken, async (req, res) => {
     const negMark = exam.negativeMarkPerQuestion || 0;
     const isAdmin = req.user.role === 'admin';
 
-    let mistakeAnalysis = [];
-    if (isAdmin) {
-      // Full administrative review for Tony Stark & Captain America
-      mistakeAnalysis = (exam.questions || []).map((q, idx) => {
-        const selectedIdx = attempt.answers ? attempt.answers[q.id] : undefined;
-        const isAnswered = selectedIdx !== undefined && selectedIdx !== null;
-        const isCorrect = isAnswered && Number(selectedIdx) === Number(q.correctOptionIndex);
+    // Once submitted, full mistake analysis and correct answers show up for both members and commanders
+    const mistakeAnalysis = (exam.questions || []).map((q, idx) => {
+      const selectedIdx = attempt.answers ? attempt.answers[q.id] : undefined;
+      const isAnswered = selectedIdx !== undefined && selectedIdx !== null;
+      const isCorrect = isAnswered && Number(selectedIdx) === Number(q.correctOptionIndex);
 
-        let status = 'unanswered';
-        let marks = 0;
+      let status = 'unanswered';
+      let marks = 0;
 
-        if (isAnswered) {
-          if (isCorrect) {
-            status = 'correct';
-            marks = marksPerQ;
-          } else {
-            status = 'incorrect';
-            marks = -negMark;
-          }
+      if (isAnswered) {
+        if (isCorrect) {
+          status = 'correct';
+          marks = marksPerQ;
+        } else {
+          status = 'incorrect';
+          marks = -negMark;
         }
+      }
 
-        return {
-          questionId: q.id,
-          questionNumber: idx + 1,
-          questionText: q.questionText,
-          options: q.options,
-          selectedOptionIndex: isAnswered ? selectedIdx : null,
-          selectedOptionText: isAnswered ? q.options[selectedIdx] : 'No answer selected',
-          correctOptionIndex: q.correctOptionIndex,
-          correctOptionText: q.options[q.correctOptionIndex],
-          status,
-          marksAwarded: marks,
-          explanation: q.explanation || 'No rationale documented.',
-          revisionConcept: q.revisionConcept || exam.subject
-        };
-      });
-    } else {
-      // For candidates: Show ONLY question and candidate's selected option - DO NOT REVEAL ANSWERS!
-      mistakeAnalysis = (exam.questions || []).map((q, idx) => {
-        const selectedIdx = attempt.answers ? attempt.answers[q.id] : undefined;
-        const isAnswered = selectedIdx !== undefined && selectedIdx !== null;
-
-        return {
-          questionId: q.id,
-          questionNumber: idx + 1,
-          questionText: q.questionText,
-          options: q.options,
-          selectedOptionIndex: isAnswered ? selectedIdx : null,
-          selectedOptionText: isAnswered ? q.options[selectedIdx] : 'No answer selected',
-          status: isAnswered ? 'answered' : 'unanswered'
-        };
-      });
-    }
+      return {
+        questionId: q.id,
+        questionNumber: idx + 1,
+        questionText: q.questionText,
+        options: q.options,
+        selectedOptionIndex: isAnswered ? selectedIdx : null,
+        selectedOptionText: isAnswered ? q.options[selectedIdx] : 'No answer selected',
+        correctOptionIndex: q.correctOptionIndex,
+        correctOptionText: q.options[q.correctOptionIndex],
+        status,
+        marksAwarded: marks,
+        explanation: q.explanation || 'No rationale documented.',
+        revisionConcept: q.revisionConcept || exam.subject
+      };
+    });
 
     res.json({
       attemptId: attempt._id,
@@ -489,7 +470,7 @@ router.get('/:id/result', authenticateToken, async (req, res) => {
       percentage: attempt.percentage || 0,
       accuracy: attempt.accuracy || 0,
       violationsCount: attempt.violationsCount || 0,
-      answerKeyReleased: isAdmin,
+      answerKeyReleased: true,
       mistakeAnalysis
     });
   } catch (err) {

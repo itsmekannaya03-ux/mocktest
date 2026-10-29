@@ -239,6 +239,19 @@ export default function AdminDashboard({
     }
   };
 
+  // Remove player / candidate from roster
+  const handleRemovePlayer = async (playerId, playerName) => {
+    if (!window.confirm(`Are you sure you want to remove player "${playerName}" from the roster?`)) {
+      return;
+    }
+    try {
+      await api.removePlayer(playerId);
+      await loadData();
+    } catch (err) {
+      alert(`Could not remove player: ${err.message}`);
+    }
+  };
+
   // Export CSV of all results
   const handleExportCSV = () => {
     const list = overview?.allResults || [];
@@ -1302,7 +1315,8 @@ Answer: B`}
                         <th className="py-2.5 px-3">Badge ID</th>
                         <th className="py-2.5 px-3">Current Status</th>
                         <th className="py-2.5 px-3">Clearance / Role</th>
-                        <th className="py-2.5 px-3 text-right">Joined</th>
+                        <th className="py-2.5 px-3">Joined</th>
+                        <th className="py-2.5 px-3 text-right">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800/60 font-mono">
@@ -1357,8 +1371,21 @@ Answer: B`}
                               {player.clearance || 'Level 3 - Operative'}
                             </td>
 
-                            <td className="py-3 px-3 font-mono text-[10px] text-slate-500 text-right">
+                            <td className="py-3 px-3 font-mono text-[10px] text-slate-500">
                               {player.createdAt ? new Date(player.createdAt).toLocaleDateString() : 'N/A'}
+                            </td>
+
+                            <td className="py-3 px-3 text-right">
+                              {player.role !== 'admin' && (
+                                <button
+                                  onClick={() => handleRemovePlayer(player.id, player.name)}
+                                  className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-950/70 hover:bg-rose-900 border border-rose-800/80 text-rose-300 hover:text-white transition-all inline-flex items-center space-x-1 shadow-sm"
+                                  title={`Remove ${player.name} from roster`}
+                                >
+                                  <Trash2 className="w-3 h-3 text-rose-400" />
+                                  <span>Remove</span>
+                                </button>
+                              )}
                             </td>
                           </tr>
                         );

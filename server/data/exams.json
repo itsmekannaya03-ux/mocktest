@@ -1,11 +1,11 @@
 [
   {
-    "_id": "45eb8686-eedb-4b41-a409-1db3b3851a22",
-    "createdAt": "2026-10-29T08:01:19.964Z",
-    "updatedAt": "2026-10-29T08:19:19.896Z",
+    "_id": "6ae988d4-d610-47a0-babd-11b11689d710",
+    "createdAt": "2026-10-29T08:50:44.680Z",
+    "updatedAt": "2026-10-29T08:51:20.090Z",
     "title": "Team Mock Assessment",
-    "code": "IRIS-465",
-    "subject": "Core Engineering & Protocol",
+    "code": "EXAM-465",
+    "subject": "Core Engineering & Navigation",
     "description": "Timed assessment with anti-cheat protection and per-candidate question randomization.",
     "durationMinutes": 15,
     "marksPerQuestion": 4,
@@ -13,6 +13,7 @@
     "violationThreshold": 1,
     "answerKeyRelease": "immediate",
     "status": "published",
+    "isLive": false,
     "instructions": [
       "Fullscreen mode is strictly enforced.",
       "Tab switching, external AI usage, or losing window focus results in immediate disqualification and blocking.",
@@ -60,8 +61,7 @@
       }
     ],
     "createdBy": "Tony Stark",
-    "isLive": false,
-    "startedAt": "2026-10-29T08:01:23.934Z",
-    "stoppedAt": "2026-10-29T08:19:19.896Z"
+    "startedAt": "2026-10-29T08:50:44.679Z",
+    "stoppedAt": "2026-10-29T08:51:20.089Z"
   }
 ]
