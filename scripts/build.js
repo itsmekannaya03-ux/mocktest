@@ -22,3 +22,4 @@ if (fs.existsSync(clientDist)) {
 }
 
 console.log('✓ Build complete: Both root ./dist and ./client/dist are ready.');
+
