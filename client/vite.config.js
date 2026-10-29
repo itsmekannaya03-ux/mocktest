@@ -19,7 +19,12 @@ function syncDistPlugin() {
             fs.mkdirSync(rootDist, { recursive: true })
           }
           fs.cpSync(clientDist, rootDist, { recursive: true })
-          console.log('[sync-dist-plugin] Successfully synchronized client/dist -> root/dist')
+
+          const entryCode = `export default function handler(req, res) {\n  res.writeHead(200, { 'Content-Type': 'text/html' });\n  res.end('Mock Examination Platform UI Ready');\n}\n`;
+          fs.writeFileSync(path.join(clientDist, 'index.js'), entryCode);
+          fs.writeFileSync(path.join(rootDist, 'index.js'), entryCode);
+          
+          console.log('[sync-dist-plugin] Successfully synchronized client/dist -> root/dist with entrypoint')
         }
       } catch (err) {
         console.warn('[sync-dist-plugin] Warning copying dist:', err.message)
