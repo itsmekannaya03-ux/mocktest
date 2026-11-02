@@ -1,16 +1,30 @@
 [
   {
-    "_id": "fbb8bda6-cec4-46c1-91d5-4ccd088efeb1",
-    "createdAt": "2026-11-02T14:38:21.110Z",
-    "updatedAt": "2026-11-02T14:38:21.110Z",
-    "attemptId": "5ec7cc0a-bfe8-47ac-be07-fe51be3868ee",
-    "userId": "bdd5ac09-defb-4b48-a8f7-8289dd4d9344",
+    "_id": "bffdbff0-5bf8-43a0-8e39-8db9834a1889",
+    "createdAt": "2026-11-02T15:06:11.126Z",
+    "updatedAt": "2026-11-02T15:06:11.126Z",
+    "attemptId": "eb866f94-d301-4204-a44a-60e39c77b5b9",
+    "userId": "fa1f1fb8-41ac-4b9c-afed-8dbe2df63ad6",
     "userName": "Rishith",
-    "examId": "086e0247-6535-4c23-a129-e3a9fdbacf9f",
+    "examId": "e7c89419-4b0a-453f-b308-933b1d3a1c34",
     "examTitle": "IRIS Cybersecurity Evaluation",
     "type": "Tab Switch Detected",
     "details": "The candidate switched to another browser tab or minimized window.",
     "count": 1,
-    "timestamp": "2026-11-02T14:38:21.110Z"
+    "timestamp": "2026-11-02T15:06:11.126Z"
+  },
+  {
+    "_id": "0fca3945-0819-44e9-a767-105efdaec383",
+    "createdAt": "2026-11-02T15:06:42.645Z",
+    "updatedAt": "2026-11-02T15:06:42.645Z",
+    "attemptId": "d8189890-23d7-44c0-ac3c-a4d645bcdd0d",
+    "userId": "fa1f1fb8-41ac-4b9c-afed-8dbe2df63ad6",
+    "userName": "Rishith",
+    "examId": "3ef2f5e5-83a4-4eda-90b7-f00c764c875e",
+    "examTitle": "IRIS Cybersecurity Evaluation",
+    "type": "Tab Switch Detected",
+    "details": "The candidate switched to another browser tab or minimized window.",
+    "count": 1,
+    "timestamp": "2026-11-02T15:06:42.644Z"
   }
 ]

@@ -912,18 +912,24 @@ Answer: B`}
                       >
                         <div className="flex items-center justify-between">
                           <span className="font-mono font-bold text-cyan-400">Question {qIdx + 1}</span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setExamForm(prev => ({
-                                ...prev,
-                                questions: prev.questions.filter((_, i) => i !== qIdx)
-                              }));
-                            }}
-                            className="text-rose-400 hover:text-rose-300 text-xs"
-                          >
-                            Delete
-                          </button>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 flex items-center space-x-1">
+                              <span>✓ Correct:</span>
+                              <strong>Option {String.fromCharCode(65 + (q.correctOptionIndex || 0))}</strong>
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setExamForm(prev => ({
+                                  ...prev,
+                                  questions: prev.questions.filter((_, i) => i !== qIdx)
+                                }));
+                              }}
+                              className="text-rose-400 hover:text-rose-300 text-xs ml-2 cursor-pointer"
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </div>
 
                         <input

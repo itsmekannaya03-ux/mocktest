@@ -163,6 +163,10 @@ async function run() {
   const candidateSeesAnswers = student2Mistakes.some(m => m.correctOptionIndex !== undefined || m.correctOptionText !== undefined);
   console.log('10.1 Candidate Result (CORRECT ANSWERS REVEALED ON SUBMISSION):', candidateSeesAnswers ? 'PASS' : 'FAIL');
 
+  // 10.2 Verify NO ONE can enter when quiz is stopped (Expect 403)
+  const stoppedEntryTry = await callApi('POST', '/api/attempts/start', { examId }, { authorization: `Bearer ${student1Token}` });
+  console.log('10.2 Stopped Quiz Blocks New Entry (Expect 403):', stoppedEntryTry.status === 403 ? 'PASS' : 'FAIL');
+
   // 11. Admin Overview: Cheated list shows Rishith by name and count
   const adminOverview = await callApi('GET', '/api/admin/overview', {}, { authorization: `Bearer ${adminToken}` });
   const cheatedUser = adminOverview.data.cheatedList.find(c => c.studentName === 'Rishith' || c.userName === 'Rishith');

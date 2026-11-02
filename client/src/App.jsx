@@ -88,12 +88,12 @@ function MainApp() {
           if (targetRoom === 'admin-room' || loggedUser.role === 'admin') {
             setCurrentView('admin-dashboard');
           } else {
-            // Direct entry into active quiz without heavy routes!
+            // Direct entry into active quiz without heavy routes ONLY IF EXAM IS LIVE!
             try {
               const exams = await api.getExams();
-              const targetExam = exams.find(e => e.isLive) || exams[0];
-              if (targetExam && (!targetExam.userAttempt || targetExam.userAttempt.status === 'in_progress')) {
-                await handleDirectStartExam(targetExam);
+              const liveExam = exams.find(e => e.isLive);
+              if (liveExam && (!liveExam.userAttempt || liveExam.userAttempt.status === 'in_progress')) {
+                await handleDirectStartExam(liveExam);
                 return;
               }
             } catch (e) {

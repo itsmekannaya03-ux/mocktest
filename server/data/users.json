@@ -24,27 +24,27 @@
     "badgeId": "IRIS-ADMIN-02"
   },
   {
-    "_id": "bdd5ac09-defb-4b48-a8f7-8289dd4d9344",
-    "createdAt": "2026-11-02T14:38:21.024Z",
-    "updatedAt": "2026-11-02T14:38:21.024Z",
+    "_id": "fa1f1fb8-41ac-4b9c-afed-8dbe2df63ad6",
+    "createdAt": "2026-11-02T15:06:11.046Z",
+    "updatedAt": "2026-11-02T15:06:11.047Z",
     "name": "Rishith",
     "alias": "IRIS Operative",
-    "email": "rishith.738@iris.shield",
-    "password": "$2b$10$qByx6hI9LJi4G8Aj5zfYkelDdj8l7HbUdhniEad/i4.TupKzArrH.",
+    "email": "rishith.463@iris.shield",
+    "password": "$2b$10$CJFAoL.UTgsy4HQh1.ivQOitQD2vyoNyXccZP7r7bqn8IvNehiA3a",
     "role": "student",
     "clearance": "Level 3 - Operative",
-    "badgeId": "IRIS-MEMBER-738"
+    "badgeId": "IRIS-MEMBER-463"
   },
   {
-    "_id": "3876d008-54fa-4206-84b7-c80b38ecd6f3",
-    "createdAt": "2026-11-02T14:38:21.086Z",
-    "updatedAt": "2026-11-02T14:38:21.086Z",
+    "_id": "db60bd7a-9e02-464d-b301-8faf9cfa877a",
+    "createdAt": "2026-11-02T15:06:11.104Z",
+    "updatedAt": "2026-11-02T15:06:11.104Z",
     "name": "Arjun",
     "alias": "IRIS Operative",
-    "email": "arjun.300@iris.shield",
-    "password": "$2b$10$eBd4GmHzJAchn9kfPIsiJO5oojkGwoudj2seElkOjtKv7/rt/Qwea",
+    "email": "arjun.389@iris.shield",
+    "password": "$2b$10$eXDVVX6cIpXEwp/sErUMM.VGhRgxH2WjjHVECfP1OdEKORyt/sFz2",
     "role": "student",
     "clearance": "Level 3 - Operative",
-    "badgeId": "IRIS-MEMBER-300"
+    "badgeId": "IRIS-MEMBER-389"
   }
 ]

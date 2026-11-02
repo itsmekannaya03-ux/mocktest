@@ -1,8 +1,8 @@
 [
   {
-    "_id": "dd0b2136-73a3-4aec-8e62-384e72ec53d0",
-    "createdAt": "2026-11-02T14:38:20.951Z",
-    "updatedAt": "2026-11-02T14:38:21.130Z",
+    "_id": "1aa47d06-66a3-47a5-9cfd-d2438284228d",
+    "createdAt": "2026-11-02T15:02:55.796Z",
+    "updatedAt": "2026-11-02T15:06:11.146Z",
     "title": "Team Mock Assessment",
     "code": "EXAM-465",
     "subject": "Core Engineering & Navigation",
@@ -61,7 +61,7 @@
       }
     ],
     "createdBy": "Tony Stark",
-    "startedAt": "2026-11-02T14:38:20.949Z",
-    "stoppedAt": "2026-11-02T14:38:21.129Z"
+    "startedAt": "2026-11-02T15:02:55.796Z",
+    "stoppedAt": "2026-11-02T15:06:11.145Z"
   }
 ]

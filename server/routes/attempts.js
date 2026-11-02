@@ -35,6 +35,13 @@ router.post('/start', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Examination protocol not found.' });
     }
 
+    // When admin stops the quiz (isLive is false), no one can enter or resume!
+    if (!exam.isLive) {
+      return res.status(403).json({
+        error: 'The examination has been stopped or concluded by the Administrator. No candidates can enter the exam room.'
+      });
+    }
+
     // Check for existing attempt
     const existingAttempt = await db.Attempts.findOne({
       userId: req.user.id,

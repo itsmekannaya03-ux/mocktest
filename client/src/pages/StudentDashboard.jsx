@@ -13,7 +13,8 @@ import {
   Zap, 
   RotateCcw,
   Sparkles,
-  BookOpen
+  BookOpen,
+  Lock
 } from 'lucide-react';
 import DisclaimerBanner from '../components/DisclaimerBanner';
 
@@ -223,6 +224,11 @@ export default function StudentDashboard({ onSelectExam, onViewResult }) {
                           <span>Review Mistake Analysis</span>
                           <ArrowRight className="w-3.5 h-3.5" />
                         </button>
+                      </div>
+                    ) : !exam.isLive ? (
+                      <div className="w-full py-2.5 px-4 rounded-xl text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-500 text-center flex items-center justify-center space-x-2">
+                        <Lock className="w-3.5 h-3.5" />
+                        <span>Exam Concluded (Closed)</span>
                       </div>
                     ) : (
                       <button
