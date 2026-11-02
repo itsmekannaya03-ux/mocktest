@@ -22,5 +22,29 @@
     "role": "admin",
     "clearance": "Level 10 - Vanguard Command",
     "badgeId": "IRIS-ADMIN-02"
+  },
+  {
+    "_id": "bdd5ac09-defb-4b48-a8f7-8289dd4d9344",
+    "createdAt": "2026-11-02T14:38:21.024Z",
+    "updatedAt": "2026-11-02T14:38:21.024Z",
+    "name": "Rishith",
+    "alias": "IRIS Operative",
+    "email": "rishith.738@iris.shield",
+    "password": "$2b$10$qByx6hI9LJi4G8Aj5zfYkelDdj8l7HbUdhniEad/i4.TupKzArrH.",
+    "role": "student",
+    "clearance": "Level 3 - Operative",
+    "badgeId": "IRIS-MEMBER-738"
+  },
+  {
+    "_id": "3876d008-54fa-4206-84b7-c80b38ecd6f3",
+    "createdAt": "2026-11-02T14:38:21.086Z",
+    "updatedAt": "2026-11-02T14:38:21.086Z",
+    "name": "Arjun",
+    "alias": "IRIS Operative",
+    "email": "arjun.300@iris.shield",
+    "password": "$2b$10$eBd4GmHzJAchn9kfPIsiJO5oojkGwoudj2seElkOjtKv7/rt/Qwea",
+    "role": "student",
+    "clearance": "Level 3 - Operative",
+    "badgeId": "IRIS-MEMBER-300"
   }
 ]

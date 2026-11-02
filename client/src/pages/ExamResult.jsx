@@ -13,9 +13,12 @@ import {
   ArrowLeft, 
   RotateCcw, 
   Lock, 
-  Sparkles,
-  BookOpen,
-  Filter
+  Sparkles, 
+  BookOpen, 
+  Filter,
+  Share2,
+  Copy,
+  Check
 } from 'lucide-react';
 import DisclaimerBanner from '../components/DisclaimerBanner';
 
@@ -24,6 +27,8 @@ export default function ExamResult({ attemptId, onBackToDashboard }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all'); // 'all', 'incorrect', 'correct', 'unanswered'
+  const [copied, setCopied] = useState(false);
+  const [shareToast, setShareToast] = useState(false);
 
   useEffect(() => {
     async function loadResult() {
@@ -80,6 +85,35 @@ export default function ExamResult({ attemptId, onBackToDashboard }) {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
     return `${m}m ${s}s`;
+  };
+
+  const handleShareResult = async () => {
+    const shareText = `🎯 Examination Result: ${result.examTitle}\n👤 Candidate: ${result.studentName} (${result.studentBadge})\n📊 Score: ${result.score}/${result.maxMarks} (${result.percentage}%)\n🎯 Accuracy: ${result.accuracy}%\n✅ Correct: ${result.correctCount} | ❌ Incorrect: ${result.incorrectCount}\n⏱ Time Taken: ${formatTime(result.timeSpentSeconds)}\n🛡 Status: ${isTerminated ? 'Terminated' : 'Completed'}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${result.examTitle} Scorecard - ${result.studentName}`,
+          text: shareText,
+          url: window.location.href
+        });
+        return;
+      } catch (e) {
+        // Fallback to clipboard if share was cancelled or failed
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(`${shareText}\n🔗 ${window.location.href}`);
+      setCopied(true);
+      setShareToast(true);
+      setTimeout(() => {
+        setCopied(false);
+        setShareToast(false);
+      }, 3000);
+    } catch (err) {
+      alert(shareText);
+    }
   };
 
   // Filtered mistake analysis list
@@ -140,9 +174,9 @@ export default function ExamResult({ attemptId, onBackToDashboard }) {
             )}
           </div>
 
-          {/* Primary Score Ring / Box */}
-          <div className="flex items-center gap-4">
-            <div className="text-center p-4 sm:p-5 rounded-2xl bg-black/40 border border-slate-800/80 min-w-[130px]">
+          {/* Primary Score Ring / Box with Share Button */}
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="text-center p-4 sm:p-5 rounded-2xl bg-black/40 border border-slate-800/80 min-w-[130px] shadow-lg">
               <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
                 Total Score
               </span>
@@ -153,6 +187,32 @@ export default function ExamResult({ attemptId, onBackToDashboard }) {
               <span className="text-xs font-bold text-emerald-400 font-mono mt-1 block">
                 {result.percentage}% Marks
               </span>
+            </div>
+
+            {/* Share Result Button */}
+            <div className="flex flex-col items-center gap-1.5 w-full sm:w-auto">
+              <button
+                onClick={handleShareResult}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 shadow-lg shadow-cyan-500/20 flex items-center justify-center space-x-2 transition-all active:scale-95 cursor-pointer"
+                title="Share your examination result"
+              >
+                {copied ? (
+                  <>
+                    <Check className="w-4 h-4 text-emerald-950" />
+                    <span>Score Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Share2 className="w-4 h-4" />
+                    <span>Share Result</span>
+                  </>
+                )}
+              </button>
+              {shareToast && (
+                <span className="text-[10px] font-mono font-bold text-emerald-400 animate-pulse">
+                  ✓ Copied to clipboard!
+                </span>
+              )}
             </div>
           </div>
         </div>

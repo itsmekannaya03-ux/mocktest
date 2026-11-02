@@ -227,9 +227,9 @@ export default function StudentDashboard({ onSelectExam, onViewResult }) {
                     ) : (
                       <button
                         onClick={() => onSelectExam(exam)}
-                        className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 shadow-md shadow-cyan-500/20 flex items-center justify-center space-x-2 transition-all"
+                        className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 shadow-md shadow-cyan-500/20 flex items-center justify-center space-x-2 transition-all cursor-pointer"
                       >
-                        <span>{isInProgress ? 'Resume Examination' : 'Inspect Rules & Start Exam'}</span>
+                        <span>{isInProgress ? 'Resume Examination' : 'Start Exam Now'}</span>
                         <ArrowRight className="w-4 h-4" />
                       </button>
                     )}

@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "_id": "fbb8bda6-cec4-46c1-91d5-4ccd088efeb1",
+    "createdAt": "2026-11-02T14:38:21.110Z",
+    "updatedAt": "2026-11-02T14:38:21.110Z",
+    "attemptId": "5ec7cc0a-bfe8-47ac-be07-fe51be3868ee",
+    "userId": "bdd5ac09-defb-4b48-a8f7-8289dd4d9344",
+    "userName": "Rishith",
+    "examId": "086e0247-6535-4c23-a129-e3a9fdbacf9f",
+    "examTitle": "IRIS Cybersecurity Evaluation",
+    "type": "Tab Switch Detected",
+    "details": "The candidate switched to another browser tab or minimized window.",
+    "count": 1,
+    "timestamp": "2026-11-02T14:38:21.110Z"
+  }
+]

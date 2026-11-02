@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { SocketProvider } from './context/SocketContext';
+import { SocketProvider, useSocket } from './context/SocketContext';
 import Navbar from './components/Navbar';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -19,6 +19,7 @@ import { api } from './services/api';
 
 function MainApp() {
   const { user, loading, isAdmin } = useAuth();
+  const { socket } = useSocket();
 
   // Navigation states
   const [currentView, setCurrentView] = useState('common-room');
@@ -29,6 +30,22 @@ function MainApp() {
   const [authMode, setAuthMode] = useState('login'); // 'login' or 'register'
   const [startingExam, setStartingExam] = useState(false);
   const [isQuizLive, setIsQuizLive] = useState(false);
+
+  // Auto-kick examinee out of exam room straight to results when admin stops quiz
+  useEffect(() => {
+    if (!socket) return;
+    const handleQuizStopped = (data) => {
+      setIsQuizLive(false);
+      if (currentView === 'exam-room' && activeAttempt) {
+        handleExamFinished(activeAttempt._id);
+      } else if (currentView === 'exam-instructions') {
+        setCurrentView('common-room');
+      }
+    };
+
+    socket.on('quiz_stopped', handleQuizStopped);
+    return () => socket.off('quiz_stopped', handleQuizStopped);
+  }, [socket, currentView, activeAttempt]);
 
   // If loading user session
   if (loading) {
@@ -42,14 +59,46 @@ function MainApp() {
     );
   }
 
+  // Direct 1-Click Start without heavy intermediate screens
+  const handleDirectStartExam = async (examSummary) => {
+    try {
+      setStartingExam(true);
+      const res = await api.startAttempt(examSummary._id);
+      setActiveAttempt(res.attempt);
+      if (res.exam && res.exam.questions && res.exam.questions.length > 0) {
+        setSelectedExam(res.exam);
+      } else {
+        const fullExam = await api.getExamById(examSummary._id);
+        setSelectedExam(fullExam);
+      }
+      setCurrentView('exam-room');
+    } catch (err) {
+      alert(`Could not start exam: ${err.message}`);
+      setCurrentView('common-room');
+    } finally {
+      setStartingExam(false);
+    }
+  };
+
   // Not authenticated
   if (!user) {
     return (
       <Login
-        onLoginSuccess={(loggedUser, targetRoom) => {
+        onLoginSuccess={async (loggedUser, targetRoom) => {
           if (targetRoom === 'admin-room' || loggedUser.role === 'admin') {
             setCurrentView('admin-dashboard');
           } else {
+            // Direct entry into active quiz without heavy routes!
+            try {
+              const exams = await api.getExams();
+              const targetExam = exams.find(e => e.isLive) || exams[0];
+              if (targetExam && (!targetExam.userAttempt || targetExam.userAttempt.status === 'in_progress')) {
+                await handleDirectStartExam(targetExam);
+                return;
+              }
+            } catch (e) {
+              console.warn('Auto-start direct exam check:', e);
+            }
             setCurrentView('common-room');
           }
         }}
@@ -59,34 +108,13 @@ function MainApp() {
 
   // Handler: When user selects an exam from the dashboard
   const handleSelectExam = async (examSummary) => {
-    try {
-      const fullExam = await api.getExamById(examSummary._id);
-      setSelectedExam(fullExam);
-    } catch (err) {
-      setSelectedExam(examSummary);
-    }
-    setCurrentView('exam-instructions');
+    await handleDirectStartExam(examSummary);
   };
 
   // Handler: Start examination
   const handleStartExam = async () => {
     if (!selectedExam) return;
-    try {
-      setStartingExam(true);
-      const res = await api.startAttempt(selectedExam._id);
-      setActiveAttempt(res.attempt);
-      if (res.exam && res.exam.questions && res.exam.questions.length > 0) {
-        setSelectedExam(res.exam);
-      } else if (!selectedExam.questions || selectedExam.questions.length === 0) {
-        const fullExam = await api.getExamById(selectedExam._id);
-        setSelectedExam(fullExam);
-      }
-      setCurrentView('exam-room');
-    } catch (err) {
-      alert(`Could not start exam: ${err.message}`);
-    } finally {
-      setStartingExam(false);
-    }
+    await handleDirectStartExam(selectedExam);
   };
 
   // Handler: Exam finished

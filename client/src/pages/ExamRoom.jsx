@@ -122,10 +122,14 @@ export default function ExamRoom({ exam, attempt, onExamFinished }) {
       });
     });
 
-    // Auto-submit when admin clicks "Stop Quiz"
-    const handleQuizStopped = (data) => {
-      alert(`⏹ ASSESSMENT CONCLUDED: ${data.message || 'The administrator has concluded the examination session. Your attempted answers have been automatically submitted.'}`);
-      handleFinalSubmit(true);
+    // Auto-submit and immediately kick candidate out of exam when admin stops quiz
+    const handleQuizStopped = () => {
+      if (document.fullscreenElement && document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      }
+      if (onExamFinished) {
+        onExamFinished(attempt._id);
+      }
     };
 
     socket.on('quiz_stopped', handleQuizStopped);

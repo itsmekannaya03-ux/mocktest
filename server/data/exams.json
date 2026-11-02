@@ -1,8 +1,8 @@
 [
   {
-    "_id": "2cba6b0e-cb5e-477b-b3a1-7629ca0a480e",
-    "createdAt": "2026-10-29T09:02:48.240Z",
-    "updatedAt": "2026-10-29T09:02:48.240Z",
+    "_id": "dd0b2136-73a3-4aec-8e62-384e72ec53d0",
+    "createdAt": "2026-11-02T14:38:20.951Z",
+    "updatedAt": "2026-11-02T14:38:21.130Z",
     "title": "Team Mock Assessment",
     "code": "EXAM-465",
     "subject": "Core Engineering & Navigation",
@@ -13,7 +13,7 @@
     "violationThreshold": 1,
     "answerKeyRelease": "immediate",
     "status": "published",
-    "isLive": true,
+    "isLive": false,
     "instructions": [
       "Fullscreen mode is strictly enforced.",
       "Tab switching, external AI usage, or losing window focus results in immediate disqualification and blocking.",
@@ -61,6 +61,7 @@
       }
     ],
     "createdBy": "Tony Stark",
-    "startedAt": "2026-10-29T09:02:48.237Z"
+    "startedAt": "2026-11-02T14:38:20.949Z",
+    "stoppedAt": "2026-11-02T14:38:21.129Z"
   }
 ]
