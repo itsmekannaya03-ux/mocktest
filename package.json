@@ -9,6 +9,7 @@
     "dev": "concurrently -n \"SERVER,CLIENT\" -c \"cyan,magenta\" \"npm run dev:server\" \"npm run dev:client\"",
     "start": "npm --prefix server start",
     "build": "node scripts/build.js",
+    "test": "npm --prefix server test",
     "install:all": "npm install && npm --prefix server install && npm --prefix client install"
   },
   "devDependencies": {

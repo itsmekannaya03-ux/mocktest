@@ -10,9 +10,11 @@ export function SocketProvider({ children }) {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    // In dev or unified deploy: uses '/', or explicit backend URL via VITE_API_URL
-    const backendUrl = (import.meta.env.VITE_API_URL || '').trim() || '/';
-    const socketInstance = io(backendUrl, {
+    // In dev or unified deploy: uses '/', or explicit backend origin via VITE_API_URL
+    const rawUrl = (import.meta.env.VITE_API_URL || '').trim();
+    // Socket.io binds to root server domain (strip trailing /api if provided)
+    const socketBaseUrl = rawUrl ? rawUrl.replace(/\/api\/?$/, '').replace(/\/+$/, '') : '/';
+    const socketInstance = io(socketBaseUrl, {
       transports: ['websocket', 'polling'],
       reconnectionAttempts: 10,
       reconnectionDelay: 2000

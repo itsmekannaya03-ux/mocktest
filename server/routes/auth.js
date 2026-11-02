@@ -9,8 +9,8 @@ const { authenticateToken, JWT_SECRET } = require('../middleware/auth');
 const TONY_ADMIN_NUMBERS = [process.env.TONY_ADMIN_NUMBER || '224488', '224488', '3000', '1001'];
 const CAP_ADMIN_NUMBERS = [process.env.CAP_ADMIN_NUMBER || '224489', '1941', '1002'];
 
-// POST /api/auth/entry and /api/auth/entry-login - Single entry point for Name vs Admin Number routing
-router.post(['/entry', '/entry-login'], async (req, res) => {
+// Shared Controller: Single entry point for Name vs Admin Number routing
+const handleEntry = async (req, res) => {
   try {
     const rawInput = String(req.body.input || req.body.nameOrNumber || req.body.name || req.body.entryInput || '').trim();
 
@@ -154,6 +154,18 @@ router.post(['/entry', '/entry-login'], async (req, res) => {
     console.error('Entry error:', err);
     res.status(500).json({ error: 'Server authentication processing failure.' });
   }
+};
+
+// Route bindings for room entry
+router.post('/entry', handleEntry);
+router.post('/entry-login', handleEntry);
+
+// Explicit 405 Method Not Allowed fallback for non-POST requests to entry routes
+router.all(['/entry', '/entry-login'], (req, res, next) => {
+  if (req.method === 'POST' || req.method === 'OPTIONS') return next();
+  res.status(405).json({
+    error: `Method ${req.method} not allowed on ${req.originalUrl || req.baseUrl + req.path}. Please use POST.`
+  });
 });
 
 // POST /api/auth/login

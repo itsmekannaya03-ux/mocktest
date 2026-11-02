@@ -6,8 +6,8 @@
   "type": "commonjs",
   "scripts": {
     "start": "node server.js",
-    "build": "node scripts/build.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "test": "node tests/test_number_name_routing.js && node tests/test_tab_block_and_stop_quiz.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

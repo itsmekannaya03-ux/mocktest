@@ -46,5 +46,29 @@
     "role": "student",
     "clearance": "Level 3 - Operative",
     "badgeId": "IRIS-MEMBER-389"
+  },
+  {
+    "_id": "696c0b03-4319-4595-afab-b6dd536487fd",
+    "createdAt": "2026-11-02T16:28:41.600Z",
+    "updatedAt": "2026-11-02T16:28:41.600Z",
+    "name": "Rahul",
+    "alias": "IRIS Operative",
+    "email": "rahul.951@iris.shield",
+    "password": "$2b$10$dmZv2iq.oWA2xmjuwWrxgOV1XffzsoEs7ZXgSlu9H2EeraVN1OtyO",
+    "role": "student",
+    "clearance": "Level 3 - Operative",
+    "badgeId": "IRIS-MEMBER-951"
+  },
+  {
+    "_id": "a5db03d3-d4f3-491b-a1cf-97f36d250b3c",
+    "createdAt": "2026-11-02T16:28:41.675Z",
+    "updatedAt": "2026-11-02T16:28:41.675Z",
+    "name": "Tony Stark",
+    "alias": "IRIS Operative",
+    "email": "tonystark.421@iris.shield",
+    "password": "$2b$10$3DoSlkpSIstEswwAVsXsxOiYrhayngGhsrAhCZO1QsSrn1NUFoyJ6",
+    "role": "student",
+    "clearance": "Level 3 - Operative",
+    "badgeId": "IRIS-MEMBER-421"
   }
 ]

@@ -1,0 +1,45 @@
+# Render Blueprint for Mock Examination Platform
+# Deploy both backend Web Service and frontend Static Site in one workspace
+version: "1"
+
+services:
+  # Backend API & Real-time Proctoring Engine
+  - type: web
+    name: mocktest-server
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: '*'
+      - key: TONY_ADMIN_NUMBER
+        value: '224488'
+      - key: CAP_ADMIN_NUMBER
+        value: '224489'
+
+  # Frontend React SPA
+  - type: static_site
+    name: mocktest-client
+    plan: free
+    rootDir: client
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: mocktest-server
+          property: host
+

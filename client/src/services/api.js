@@ -1,5 +1,15 @@
 const RAW_API_URL = (import.meta.env.VITE_API_URL || '').trim();
-const API_BASE = RAW_API_URL ? `${RAW_API_URL.replace(/\/+$/, '')}/api` : '/api';
+
+// Normalize API_BASE:
+// 1. If VITE_API_URL is empty -> use '/api' (relative for Vite proxy / same-domain deployment)
+// 2. If VITE_API_URL is provided -> ensure it ends with '/api' without doubling (e.g. 'https://api.com' -> 'https://api.com/api', 'https://api.com/api' -> 'https://api.com/api')
+function getNormalizedApiBase() {
+  if (!RAW_API_URL) return '/api';
+  const clean = RAW_API_URL.replace(/\/+$/, '');
+  return clean.endsWith('/api') ? clean : `${clean}/api`;
+}
+
+const API_BASE = getNormalizedApiBase();
 
 export function getAuthToken() {
   return localStorage.getItem('auth_token');
