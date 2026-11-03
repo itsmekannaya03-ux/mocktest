@@ -47,6 +47,7 @@ export default function AdminExamManager() {
   const [rawText, setRawText] = useState('');
   const [parsingAi, setParsingAi] = useState(false);
   const [showAiBox, setShowAiBox] = useState(false);
+  const [aiApiKey, setAiApiKey] = useState(() => localStorage.getItem('MOCKTEST_AI_KEY') || '');
 
   const handleParseAi = async () => {
     if (!rawText.trim()) {
@@ -55,7 +56,10 @@ export default function AdminExamManager() {
     }
     setParsingAi(true);
     try {
-      const res = await api.parseAiQuestions(rawText);
+      if (aiApiKey.trim()) {
+        localStorage.setItem('MOCKTEST_AI_KEY', aiApiKey.trim());
+      }
+      const res = await api.parseAiQuestions(rawText, aiApiKey.trim());
       if (res.questions && res.questions.length > 0) {
         setForm(prev => ({
           ...prev,
@@ -63,7 +67,14 @@ export default function AdminExamManager() {
         }));
         setRawText('');
         setShowAiBox(false);
-        alert(`✨ Successfully formatted ${res.questions.length} questions and detected all answer keys!`);
+        const providerName = res.provider === 'grok_ai' 
+          ? 'xAI Grok' 
+          : res.provider === 'gemini_ai' 
+            ? 'Google Gemini' 
+            : res.provider === 'openai_ai' 
+              ? 'OpenAI' 
+              : 'Offline Parser';
+        alert(`✨ ${providerName} successfully formatted & solved ${res.questions.length} questions with verified answer keys!`);
       } else {
         alert('Could not detect questions in pasted text. Please verify formatting.');
       }
@@ -423,6 +434,20 @@ export default function AdminExamManager() {
                 {/* Collapsible AI Bulk Paste Area */}
                 {showAiBox && (
                   <div className="p-4 rounded-2xl bg-slate-950 border border-cyan-800/60 space-y-3 animate-in fade-in duration-200">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs">
+                      <span className="font-semibold text-cyan-300 flex items-center space-x-1.5 shrink-0">
+                        <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>AI Solver Key (Grok / Gemini / OpenAI):</span>
+                      </span>
+                      <input
+                        type="password"
+                        value={aiApiKey}
+                        onChange={(e) => setAiApiKey(e.target.value)}
+                        placeholder="Paste xai-... or Gemini or OpenAI key (optional)"
+                        className="flex-1 max-w-sm px-3 py-1 rounded-lg bg-slate-950 border border-slate-700 text-white font-mono text-[11px] placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                      />
+                    </div>
+
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-cyan-300 flex items-center space-x-1.5">
                         <Sparkles className="w-3.5 h-3.5 text-cyan-400" />

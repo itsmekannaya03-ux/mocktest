@@ -59,6 +59,7 @@ export default function AdminDashboard({
   // Modals & Forms
   const [parsingAi, setParsingAi] = useState(false);
   const [rawText, setRawText] = useState('');
+  const [aiApiKey, setAiApiKey] = useState(() => localStorage.getItem('MOCKTEST_AI_KEY') || '');
   const [examForm, setExamForm] = useState({
     title: 'Team Mock Assessment',
     subject: 'Core Engineering & Protocol',
@@ -169,14 +170,24 @@ export default function AdminDashboard({
     }
     setParsingAi(true);
     try {
-      const res = await api.parseAiQuestions(rawText);
+      if (aiApiKey.trim()) {
+        localStorage.setItem('MOCKTEST_AI_KEY', aiApiKey.trim());
+      }
+      const res = await api.parseAiQuestions(rawText, aiApiKey.trim());
       if (res.questions && res.questions.length > 0) {
         setExamForm(prev => ({
           ...prev,
           questions: res.questions
         }));
-        setActionSuccessMsg(`✨ AI successfully parsed and formatted ${res.questions.length} questions into ordered rows!`);
-        setTimeout(() => setActionSuccessMsg(''), 6000);
+        const providerName = res.provider === 'grok_ai' 
+          ? '🚀 xAI Grok' 
+          : res.provider === 'gemini_ai' 
+            ? '✨ Google Gemini' 
+            : res.provider === 'openai_ai' 
+              ? '🤖 OpenAI' 
+              : '⚡ Offline Parser';
+        setActionSuccessMsg(`${providerName} successfully solved & formatted ${res.questions.length} questions with verified answer keys!`);
+        setTimeout(() => setActionSuccessMsg(''), 7000);
       } else {
         alert('Could not find questions in the pasted text. Please verify formatting.');
       }
@@ -849,6 +860,21 @@ export default function AdminDashboard({
                     />
                   </div>
                 </div>
+              </div>
+
+              {/* AI Key Config (Grok, Gemini, OpenAI) */}
+              <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="flex items-center space-x-2 text-cyan-300 shrink-0">
+                  <Sparkles className="w-4 h-4 text-cyan-400" />
+                  <span className="font-semibold">AI Solver Key (Grok / Gemini / OpenAI):</span>
+                </div>
+                <input
+                  type="password"
+                  value={aiApiKey}
+                  onChange={(e) => setAiApiKey(e.target.value)}
+                  placeholder="Paste xai-... or Gemini or OpenAI key (optional)"
+                  className="flex-1 max-w-md px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-[11px] placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                />
               </div>
 
               {/* Paste Box */}

@@ -1,11 +1,11 @@
 [
   {
-    "_id": "d034a416-8489-45f1-b33f-fff3cf45a153",
-    "createdAt": "2026-11-03T13:45:41.061Z",
-    "updatedAt": "2026-11-03T14:29:17.398Z",
+    "_id": "2a0b2ab3-1948-4b68-b324-3444d3b39a3b",
+    "createdAt": "2026-11-03T15:26:24.350Z",
+    "updatedAt": "2026-11-03T15:33:55.074Z",
     "title": "Team Mock Assessment",
-    "code": "EXAM-465",
-    "subject": "Core Engineering & Navigation",
+    "code": "IRIS-825",
+    "subject": "Core Engineering & Protocol",
     "description": "Timed assessment with anti-cheat protection and per-candidate question randomization.",
     "durationMinutes": 15,
     "marksPerQuestion": 4,
@@ -13,7 +13,6 @@
     "violationThreshold": 1,
     "answerKeyRelease": "immediate",
     "status": "published",
-    "isLive": true,
     "instructions": [
       "Fullscreen mode is strictly enforced.",
       "Tab switching, external AI usage, or losing window focus results in immediate disqualification and blocking.",
@@ -21,47 +20,139 @@
     ],
     "questions": [
       {
-        "id": "19dd8c65-8f43-417a-988f-c908cda2695a",
-        "questionText": "Which is NOT a weakness of a compass?",
+        "id": "54ef5904-3902-468e-8f3b-92c35d916ea5",
+        "questionText": "What is the result of multiplying 45 by 12?",
         "options": [
-          "It is affected by nearby iron",
-          "It needs skill to use",
-          "It gives direction only",
-          "It stops working without satellite signal"
+          "500",
+          "540",
+          "450",
+          "640"
         ],
-        "correctOptionIndex": 3,
-        "explanation": "A magnetic compass operates purely via Earth's magnetic field and does not rely on satellite signals.",
-        "revisionConcept": "Navigation Systems"
+        "correctOptionIndex": 0,
+        "explanation": "No technical explanation provided.",
+        "revisionConcept": "General Knowledge"
       },
       {
-        "id": "28bb7d14-3e91-4c55-901b-d18302fbc789",
-        "questionText": "Which method of finding own position is used when no feature is common to both the map and the ground?",
+        "id": "85a38951-cbb5-4433-9153-0fec3435de88",
+        "questionText": "Which of the following fractions is equivalent to 1/2?",
         "options": [
-          "Inspection method",
-          "Resection method",
-          "Parallel method",
-          "Straightedge method"
+          "3/4",
+          "4/8",
+          "2/3",
+          "1/4"
         ],
-        "correctOptionIndex": 1,
-        "explanation": "Resection method determines one's own position by drawing back-azimuth lines from two or more visible distant points.",
-        "revisionConcept": "Topography & Positioning"
+        "correctOptionIndex": 0,
+        "explanation": "No technical explanation provided.",
+        "revisionConcept": "General Knowledge"
       },
       {
-        "id": "37cf9e42-7a22-48df-b452-f90918ace451",
-        "questionText": "Which is true of the Equal Altitude method of finding north?",
+        "id": "5e8fda55-40ba-40ae-b084-325d8f220e6c",
+        "questionText": "What is the boiling point of water at sea level?",
         "options": [
-          "It is quick and works in cloud",
-          "It is accurate but slow and needs sunlight",
-          "It needs the Pole Star",
-          "It needs a watch"
+          "50°C",
+          "90°C",
+          "100°C",
+          "120°C"
         ],
-        "correctOptionIndex": 1,
-        "explanation": "The Equal Altitude method utilizes the sun's shadow before and after noon; it is highly accurate but requires clear sunlight and time.",
-        "revisionConcept": "Direction Finding"
+        "correctOptionIndex": 0,
+        "explanation": "No technical explanation provided.",
+        "revisionConcept": "General Knowledge"
+      },
+      {
+        "id": "fe15ceaf-a7b3-434a-8d78-8add7bef2343",
+        "questionText": "Which gas do plants primarily take in from the air to make their food?",
+        "options": [
+          "Oxygen",
+          "Carbon dioxide",
+          "Nitrogen",
+          "Hydrogen"
+        ],
+        "correctOptionIndex": 0,
+        "explanation": "No technical explanation provided.",
+        "revisionConcept": "General Knowledge"
+      },
+      {
+        "id": "147d6f0c-56c4-40fc-ae5b-51115a46bc94",
+        "questionText": "Identify the verb in the following sentence: \"The happy dog jumped over the tall fence.\"",
+        "options": [
+          "happy",
+          "dog",
+          "jumped",
+          "tall"
+        ],
+        "correctOptionIndex": 0,
+        "explanation": "No technical explanation provided.",
+        "revisionConcept": "General Knowledge"
+      },
+      {
+        "id": "b3fce069-573f-450a-b5e1-ba5f5474ffac",
+        "questionText": "What is the correct plural form of the word \"child\"?",
+        "options": [
+          "childs",
+          "children",
+          "childrens",
+          "childes"
+        ],
+        "correctOptionIndex": 0,
+        "explanation": "No technical explanation provided.",
+        "revisionConcept": "General Knowledge"
+      },
+      {
+        "id": "84bcd334-b76f-42b0-be87-2276b25ed591",
+        "questionText": "Which of these is the largest continent on Earth?",
+        "options": [
+          "Africa",
+          "North America",
+          "Asia",
+          "Europe"
+        ],
+        "correctOptionIndex": 0,
+        "explanation": "No technical explanation provided.",
+        "revisionConcept": "General Knowledge"
+      },
+      {
+        "id": "0be67b92-bcad-43ac-9cef-85d59df620a3",
+        "questionText": "How many days are there in a standard leap year?",
+        "options": [
+          "364",
+          "365",
+          "366",
+          "367"
+        ],
+        "correctOptionIndex": 0,
+        "explanation": "No technical explanation provided.",
+        "revisionConcept": "General Knowledge"
+      },
+      {
+        "id": "1c547e1a-fc2b-4b13-9fff-83f689a81ec1",
+        "questionText": "If today is Tuesday, what day of the week will it be in 10 days?",
+        "options": [
+          "Thursday",
+          "Friday",
+          "Saturday",
+          "Sunday"
+        ],
+        "correctOptionIndex": 0,
+        "explanation": "No technical explanation provided.",
+        "revisionConcept": "General Knowledge"
+      },
+      {
+        "id": "e210f450-81d7-4abb-a6dc-b9ba59d9be8a",
+        "questionText": "Which part of a plant is primarily responsible for absorbing water and nutrients from the soil?",
+        "options": [
+          "Roots",
+          "Stem",
+          "Leaves",
+          "Flowers"
+        ],
+        "correctOptionIndex": 0,
+        "explanation": "No technical explanation provided.",
+        "revisionConcept": "General Knowledge"
       }
     ],
     "createdBy": "Tony Stark",
-    "startedAt": "2026-11-03T14:29:17.393Z",
-    "stoppedAt": "2026-11-03T14:29:10.643Z"
+    "isLive": true,
+    "startedAt": "2026-11-03T15:26:47.458Z",
+    "stoppedAt": "2026-11-03T15:33:55.073Z"
   }
 ]

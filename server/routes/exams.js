@@ -297,6 +297,120 @@ function parseAiQuestionsText(rawText) {
   return questions;
 }
 
+// Helper to safely extract JSON from LLM text responses that might contain markdown fences or surrounding text
+function extractJsonFromText(raw) {
+  if (!raw || typeof raw !== 'string') return null;
+  const fenceMatch = raw.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  const textToParse = fenceMatch ? fenceMatch[1].trim() : raw.trim();
+  try {
+    return JSON.parse(textToParse);
+  } catch (e) {
+    const arrayMatch = textToParse.match(/\[\s*\{[\s\S]*\}\s*\]/);
+    if (arrayMatch) {
+      return JSON.parse(arrayMatch[0]);
+    }
+    const objMatch = textToParse.match(/\{[\s\S]*\}/);
+    if (objMatch) {
+      return JSON.parse(objMatch[0]);
+    }
+    throw e;
+  }
+}
+
+// Call xAI Grok API to intelligently solve, verify, and format question papers
+async function parseWithGrokApi(rawText, apiKey) {
+  const prompt = `You are an expert examination processor, academic fact-checker, and question solver.
+Analyze the following raw question paper.
+For every question:
+1. Extract or clean the question text.
+2. Provide exactly 4 distinct multiple-choice options (Option A, Option B, Option C, Option D).
+3. ACTUALLY SOLVE THE QUESTION and determine the 100% FACTUALLY, SCIENTIFICALLY, AND MATHEMATICALLY TRUE answer.
+   - For example:
+     * Boiling point of water at sea level is 100°C (NOT 50°C).
+     * The largest continent on Earth is Asia (NOT Africa).
+     * Multiplying 45 by 12 equals 540 (NOT 500).
+     * Standard leap year has 366 days (NOT 364).
+     * 4/8 is equivalent to 1/2 (NOT 3/4).
+     * Tuesday in 10 days is Friday (NOT Thursday).
+     * In "The happy dog jumped over the tall fence", the verb is "jumped" (NOT happy).
+     * Plural of "child" is "children" (NOT childs).
+     * Plants take in Carbon dioxide from air to make food.
+4. Set "correctOptionIndex" to the exact 0-based index of the TRUE correct option (0 for A, 1 for B, 2 for C, 3 for D). NEVER default to 0 if 0 is wrong.
+5. Provide a clear technical explanation justifying why that answer is factually correct.
+6. Provide the relevant topic or revision concept.
+
+Return ONLY a JSON array of question objects with this schema:
+[
+  {
+    "questionText": "string",
+    "options": ["string", "string", "string", "string"],
+    "correctOptionIndex": 0,
+    "explanation": "string",
+    "revisionConcept": "string"
+  }
+]`;
+
+  const modelsToTry = ['grok-2-latest', 'grok-beta', 'grok-2'];
+  let lastError = null;
+
+  for (const model of modelsToTry) {
+    try {
+      const response = await fetch('https://api.x.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey.trim()}`
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: prompt },
+            { role: 'user', content: `Solve and structure these questions with 100% accurate correct answers:\n\n${rawText}` }
+          ],
+          temperature: 0.1
+        })
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`xAI Grok (${model}) error (${response.status}): ${errText}`);
+      }
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content;
+      if (!content) throw new Error('No content returned by Grok model.');
+
+      const parsed = extractJsonFromText(content);
+      const list = Array.isArray(parsed) ? parsed : (parsed.questions || Object.values(parsed)[0] || []);
+
+      if (Array.isArray(list) && list.length > 0) {
+        return list.map((q, idx) => {
+          let options = Array.isArray(q.options) ? q.options.map(String) : [];
+          while (options.length < 4) options.push(`Option ${String.fromCharCode(65 + options.length)}`);
+          options = options.slice(0, 4);
+
+          const rawIdx = parseInt(q.correctOptionIndex, 10);
+          const validIdx = (Number.isInteger(rawIdx) && rawIdx >= 0 && rawIdx < 4) ? rawIdx : 0;
+
+          return {
+            id: uuidv4(),
+            questionText: String(q.questionText || `Question ${idx + 1}`).trim(),
+            options,
+            correctOptionIndex: validIdx,
+            explanation: String(q.explanation || 'Factually solved and verified by Grok AI.').trim(),
+            revisionConcept: String(q.revisionConcept || 'General Knowledge').trim()
+          };
+        });
+      }
+    } catch (err) {
+      lastError = err;
+      console.warn(`Grok model ${model} attempt failed:`, err.message);
+    }
+  }
+
+  throw lastError || new Error('Failed to parse question paper with xAI Grok.');
+}
+
 // Call Google Gemini API to intelligently parse, solve, and verify question papers
 async function parseWithGeminiApi(rawText, apiKey) {
   const prompt = `You are an expert examination processor and fact-checker. 
@@ -439,30 +553,48 @@ router.post('/ai-parse', authenticateToken, requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Please provide raw questions text to parse.' });
     }
 
-    const effectiveGeminiKey = apiKey || process.env.GEMINI_API_KEY;
-    const effectiveOpenAiKey = apiKey || process.env.OPENAI_API_KEY;
+    const trimmedKey = (apiKey && typeof apiKey === 'string') ? apiKey.trim() : '';
+    const grokKey = (trimmedKey.startsWith('xai-') ? trimmedKey : null) || process.env.GROK_API_KEY || process.env.XAI_API_KEY;
+    const openAiKey = (trimmedKey.startsWith('sk-') ? trimmedKey : null) || process.env.OPENAI_API_KEY;
+    const geminiKey = (!trimmedKey.startsWith('xai-') && !trimmedKey.startsWith('sk-') && trimmedKey ? trimmedKey : null) || process.env.GEMINI_API_KEY;
 
     let questions = [];
     let provider = 'offline_parser';
 
-    if (effectiveGeminiKey && !effectiveGeminiKey.startsWith('sk-')) {
+    // 1. Try Grok (xAI) if key is available
+    if (grokKey) {
       try {
-        questions = await parseWithGeminiApi(rawText, effectiveGeminiKey);
+        questions = await parseWithGrokApi(rawText, grokKey);
+        provider = 'grok_ai';
+      } catch (grokErr) {
+        console.warn('Grok API parse failed, trying fallback:', grokErr.message);
+      }
+    }
+
+    // 2. Try Gemini if Grok not used or failed
+    if (questions.length === 0 && geminiKey) {
+      try {
+        questions = await parseWithGeminiApi(rawText, geminiKey);
         provider = 'gemini_ai';
       } catch (geminiErr) {
-        console.warn('Gemini API parse failed, falling back to local parser:', geminiErr.message);
-        questions = parseAiQuestionsText(rawText);
+        console.warn('Gemini API parse failed, trying fallback:', geminiErr.message);
       }
-    } else if (effectiveOpenAiKey && effectiveOpenAiKey.startsWith('sk-')) {
+    }
+
+    // 3. Try OpenAI if still not parsed
+    if (questions.length === 0 && openAiKey) {
       try {
-        questions = await parseWithOpenAiApi(rawText, effectiveOpenAiKey);
+        questions = await parseWithOpenAiApi(rawText, openAiKey);
         provider = 'openai_ai';
       } catch (openAiErr) {
-        console.warn('OpenAI API parse failed, falling back to local parser:', openAiErr.message);
-        questions = parseAiQuestionsText(rawText);
+        console.warn('OpenAI API parse failed, trying fallback:', openAiErr.message);
       }
-    } else {
+    }
+
+    // 4. Default to enhanced offline parser if no external AI configured
+    if (questions.length === 0) {
       questions = parseAiQuestionsText(rawText);
+      provider = 'offline_parser';
     }
 
     res.json({
