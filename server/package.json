@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test": "node tests/test_number_name_routing.js && node tests/test_tab_block_and_stop_quiz.js"
+    "test": "node tests/test_enhanced_parser.js && node tests/test_number_name_routing.js && node tests/test_tab_block_and_stop_quiz.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

@@ -421,9 +421,23 @@ router.get('/:id/result', authenticateToken, async (req, res) => {
     const isAdmin = req.user.role === 'admin';
 
     // Once submitted, full mistake analysis and correct answers show up for both members and commanders
-    const mistakeAnalysis = (exam.questions || []).map((q, idx) => {
+    // Ensure questions are displayed in the exact order the candidate took them
+    let orderedQuestions = exam.questions || [];
+    if (Array.isArray(attempt.questionOrder) && attempt.questionOrder.length > 0) {
+      const qMap = new Map((exam.questions || []).map(q => [q.id, q]));
+      const sorted = [];
+      for (const qid of attempt.questionOrder) {
+        if (qMap.has(qid)) sorted.push(qMap.get(qid));
+      }
+      for (const q of (exam.questions || [])) {
+        if (!sorted.some(sq => sq.id === q.id)) sorted.push(q);
+      }
+      orderedQuestions = sorted;
+    }
+
+    const mistakeAnalysis = orderedQuestions.map((q, idx) => {
       const selectedIdx = attempt.answers ? attempt.answers[q.id] : undefined;
-      const isAnswered = selectedIdx !== undefined && selectedIdx !== null;
+      const isAnswered = selectedIdx !== undefined && selectedIdx !== null && selectedIdx !== '' && !Number.isNaN(Number(selectedIdx));
       const isCorrect = isAnswered && Number(selectedIdx) === Number(q.correctOptionIndex);
 
       let status = 'unanswered';
@@ -439,15 +453,18 @@ router.get('/:id/result', authenticateToken, async (req, res) => {
         }
       }
 
+      const numSelected = isAnswered ? Number(selectedIdx) : null;
+      const numCorrect = Number(q.correctOptionIndex) || 0;
+
       return {
         questionId: q.id,
         questionNumber: idx + 1,
         questionText: q.questionText,
         options: q.options,
-        selectedOptionIndex: isAnswered ? selectedIdx : null,
-        selectedOptionText: isAnswered ? q.options[selectedIdx] : 'No answer selected',
-        correctOptionIndex: q.correctOptionIndex,
-        correctOptionText: q.options[q.correctOptionIndex],
+        selectedOptionIndex: numSelected,
+        selectedOptionText: (numSelected !== null && q.options && q.options[numSelected] !== undefined) ? q.options[numSelected] : 'No answer selected',
+        correctOptionIndex: numCorrect,
+        correctOptionText: (q.options && q.options[numCorrect] !== undefined) ? q.options[numCorrect] : 'Option A',
         status,
         marksAwarded: marks,
         explanation: q.explanation || 'No rationale documented.',
@@ -589,7 +606,8 @@ function calculateScore(exam, answers) {
 
   questions.forEach(q => {
     const userChoice = answers[q.id];
-    if (userChoice === undefined || userChoice === null) {
+    const hasAnswer = userChoice !== undefined && userChoice !== null && userChoice !== '' && !Number.isNaN(Number(userChoice));
+    if (!hasAnswer) {
       unansweredCount++;
     } else if (Number(userChoice) === Number(q.correctOptionIndex)) {
       correctCount++;

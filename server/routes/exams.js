@@ -23,14 +23,51 @@ function shuffleForUser(array, seedStr = '') {
   return arr;
 }
 
-// Robust AI & Text Question Parser supporting various formats: (a)/(b), Q1/Q2, numbers, or unnumbered blocks
+// Clean markdown bold, italics, code blocks, headers
+function cleanMarkdown(str) {
+  if (!str) return '';
+  return str
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/__(.*?)__/g, '$1')
+    .replace(/`(.*?)`/g, '$1')
+    .replace(/^#{1,6}\s*/, '')
+    .trim();
+}
+
+// Ultra-robust AI & Text Question Parser supporting various formats: (a)/(b), Q1/Q2, numbers, markdown, inline indicators, or unnumbered blocks
 function parseAiQuestionsText(rawText) {
   if (!rawText || typeof rawText !== 'string' || !rawText.trim()) return [];
 
-  // Normalize line breaks
-  let text = rawText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-  // Handle case where options (a) ... (b) ... (c) ... (d) are all on a single line
-  text = text.replace(/([^\n])\s+([(\[]?[B-Db-d][)\]][.:\s-]+|[B-Db-d]\.\s+)/g, '$1\n$2');
+  // 1. Normalize line breaks
+  let text = rawText.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+
+  // 2. Pre-scan for Answer Key block at end of text (e.g., "Answer Key:\n1. B\n2. C")
+  const answerKeyMap = {};
+  const answerKeyRegex = /\n(?:(?:Answer\s*Key|Answers|Solutions|Keys|Correct\s*Answers)\s*[:=-]*\s*\n)([\s\S]+)$/i;
+  const keyMatch = text.match(answerKeyRegex);
+  if (keyMatch) {
+    const keyBlock = keyMatch[1];
+    text = text.slice(0, keyMatch.index).trim(); // Remove answer key block from questions text
+
+    // Parse each line or comma-separated item in answer key block
+    const keyLines = keyBlock.split('\n');
+    for (const kl of keyLines) {
+      // Matches "1. B", "1) (b)", "Q1: B", "1 - Option B", "1: B"
+      const pairMatches = kl.matchAll(/(?:(?:Q|Question\s*)?(\d+)[\s.:)-]+(?:Option\s*)?\(?([A-Da-d1-4])\)?)/gi);
+      for (const m of pairMatches) {
+        const qNum = parseInt(m[1], 10);
+        const ansChar = m[2].toUpperCase();
+        const map = { 'A': 0, '1': 0, 'B': 1, '2': 1, 'C': 2, '3': 2, 'D': 3, '4': 3 };
+        if (map[ansChar] !== undefined) {
+          answerKeyMap[qNum] = map[ansChar];
+        }
+      }
+    }
+  }
+
+  // 3. Handle inline options on single line: "A) London  B) Paris  C) Rome  D) Berlin"
+  // Note: Only match if preceding char is not a bullet point (- or * or +)
+  text = text.replace(/([^\n\-*+•\s])\s+([(\[]?[B-Db-d2-4][)\]][.:\s-]+|[B-Db-d2-4]\.\s+)/g, '$1\n$2');
 
   const lines = text.split('\n');
   const questions = [];
@@ -44,34 +81,53 @@ function parseAiQuestionsText(rawText) {
       currentQ.options = currentQ.options.slice(0, 4);
 
       let finalCorrectIdx = 0;
+
+      // 1. Direct matched index from answer line or inline indicator
       if (typeof currentQ.correctOptionIndex === 'number' && currentQ.correctOptionIndex >= 0 && currentQ.correctOptionIndex < currentQ.options.length) {
         finalCorrectIdx = currentQ.correctOptionIndex;
-      } else if (currentQ.rawAnswerText) {
-        const rawAns = currentQ.rawAnswerText.toLowerCase().trim();
-        const foundIdx = currentQ.options.findIndex(opt => {
-          const cleanOpt = opt.toLowerCase().trim();
-          return cleanOpt === rawAns || cleanOpt.includes(rawAns) || rawAns.includes(cleanOpt);
-        });
-        if (foundIdx !== -1) finalCorrectIdx = foundIdx;
       }
+      // 2. Answer text matching (e.g. "Answer: Paris" or "Answer: B) Paris")
+      else if (currentQ.rawAnswerText) {
+        const raw = currentQ.rawAnswerText.toLowerCase().replace(/^[a-d1-4][.:)\s-]+/i, '').trim();
+        if (raw.length >= 2) {
+          // Exact or substring match of full option text
+          const foundIdx = currentQ.options.findIndex(opt => {
+            const cleanOpt = cleanMarkdown(opt).toLowerCase().trim();
+            return cleanOpt === raw || cleanOpt.startsWith(raw) || raw.startsWith(cleanOpt);
+          });
+          if (foundIdx !== -1) {
+            finalCorrectIdx = foundIdx;
+          }
+        }
+      }
+
+      // Clean option text markdown
+      const cleanedOptions = currentQ.options.map(opt => cleanMarkdown(opt).replace(/^[*•\-+]\s*/, '').trim());
 
       questions.push({
         id: uuidv4(),
-        questionText: currentQ.questionText.trim(),
-        options: currentQ.options,
+        questionText: cleanMarkdown(currentQ.questionText).trim(),
+        options: cleanedOptions,
         correctOptionIndex: finalCorrectIdx,
-        explanation: currentQ.explanation.trim() || 'No technical explanation provided.',
-        revisionConcept: currentQ.revisionConcept.trim() || 'General Knowledge'
+        explanation: cleanMarkdown(currentQ.explanation).trim() || 'No technical explanation provided.',
+        revisionConcept: cleanMarkdown(currentQ.revisionConcept).trim() || 'General Knowledge'
       });
     }
   }
 
   for (let rawLine of lines) {
-    const line = rawLine.trim();
+    const rawTrimmed = rawLine.trim();
+    if (!rawTrimmed) continue;
+
+    // Cleaned version for header checking
+    const line = cleanMarkdown(rawTrimmed);
     if (!line) continue;
 
-    // 1. Answer indicator - matches "Answer: B", "Ans: (b)", "Correct Answer: C", "Correct Option is D", "Key: A", "Right Ans: 3"
-    const ansMatch = line.match(/^(?:(?:[Cc]orrect\s*(?:[Aa]nswer|[Oo]ption)?|[Aa]nswer|[Aa]ns|[Kk]ey|[Ss]olution|[Rr]ight\s*[Aa]nswer)\s*(?:is|:|=|-|\.)?\s*)\(?([A-Da-d1-4])\)?(?:\.|\s|$)(.*)/i);
+    // 1. Answer indicator
+    // Matches:
+    // "Answer: B", "Ans: (b)", "Correct Answer: C", "Correct Option is: D", "Key: A", "Right Ans: 3"
+    // "Answer: Option B", "Ans: option (c)", "Answer: B) Paris", "Correct: B"
+    const ansMatch = line.match(/^(?:(?:[Cc]orrect\s*(?:[Aa]nswer|[Oo]ption)?|[Aa]nswer|[Aa]ns|[Kk]ey|[Ss]olution|[Rr]ight\s*[Aa]nswer)\s*(?:is|:|=|-|\.)*\s*)(?:[Oo]ption\s*)?\(?([A-Da-d1-4])\)?(?:\.|\s|:|-|$)(.*)/i);
     if (ansMatch && currentQ) {
       const char = ansMatch[1].toUpperCase();
       const map = { 'A': 0, '1': 0, 'B': 1, '2': 1, 'C': 2, '3': 2, 'D': 3, '4': 3 };
@@ -82,11 +138,25 @@ function parseAiQuestionsText(rawText) {
       continue;
     }
 
-    // Answer by text - matches "Answer: Resection method"
-    const textAnsMatch = line.match(/^(?:(?:[Cc]orrect\s*(?:[Aa]nswer|[Oo]ption)?|[Aa]nswer|[Aa]ns|[Kk]ey|[Ss]olution)\s*(?:is|:|=|-|\.)?\s*)(.+)/i);
+    // Answer by option text: e.g. "Answer: Resection method"
+    const textAnsMatch = line.match(/^(?:(?:[Cc]orrect\s*(?:[Aa]nswer|[Oo]ption)?|[Aa]nswer|[Aa]ns|[Kk]ey|[Ss]olution)\s*(?:is|:|=|-|\.)*\s*)(.+)/i);
     if (textAnsMatch && currentQ && currentQ.options.length > 0) {
-      const ansTarget = textAnsMatch[1].trim().toLowerCase();
-      const foundIdx = currentQ.options.findIndex(opt => opt.toLowerCase().trim() === ansTarget || opt.toLowerCase().includes(ansTarget));
+      const ansTarget = cleanMarkdown(textAnsMatch[1]).trim().toLowerCase();
+      // Check if target starts with "option B" or "(B)"
+      const optLetterMatch = ansTarget.match(/^(?:option\s*)?\(?([a-d1-4])\)?(?:\.|\s|$)/i);
+      if (optLetterMatch) {
+        const char = optLetterMatch[1].toUpperCase();
+        const map = { 'A': 0, '1': 0, 'B': 1, '2': 1, 'C': 2, '3': 2, 'D': 3, '4': 3 };
+        if (map[char] !== undefined) {
+          currentQ.correctOptionIndex = map[char];
+          continue;
+        }
+      }
+      // Check if ansTarget matches any option text directly
+      const foundIdx = currentQ.options.findIndex(opt => {
+        const cleanOpt = cleanMarkdown(opt).toLowerCase().trim();
+        return cleanOpt === ansTarget || cleanOpt.startsWith(ansTarget) || ansTarget.startsWith(cleanOpt);
+      });
       if (foundIdx !== -1) {
         currentQ.correctOptionIndex = foundIdx;
         continue;
@@ -94,18 +164,64 @@ function parseAiQuestionsText(rawText) {
     }
 
     // 2. Explanation / Concept / Reason
-    const expMatch = line.match(/^(?:(?:[Ee]xplanation|[Rr]ationale|[Nn]ote|[Rr]eason)\s*(?:is|:|=|-|\.)?\s*)(.*)/i);
+    const expMatch = line.match(/^(?:(?:[Ee]xplanation|[Rr]ationale|[Nn]ote|[Rr]eason)\s*(?:is|:|=|-|\.)*\s*)(.*)/i);
     if (expMatch && currentQ) {
       currentQ.explanation = expMatch[1].trim();
       continue;
     }
-    const conceptMatch = line.match(/^(?:(?:[Cc]oncept|[Tt]opic|[Rr]evise)\s*(?:is|:|=|-|\.)?\s*)(.*)/i);
+    const conceptMatch = line.match(/^(?:(?:[Cc]oncept|[Tt]opic|[Rr]evise)\s*(?:is|:|=|-|\.)*\s*)(.*)/i);
     if (conceptMatch && currentQ) {
       currentQ.revisionConcept = conceptMatch[1].trim();
       continue;
     }
 
-    // 3. Question start: "Q1. ...", "1. ...", "Question 1: ..." - MUST check BEFORE options!
+    // 3. Option line (A-D or paren/bracket/bullet numbered 1-4, or 2-4 if options already started):
+    // Matches: "A. ...", "A) ...", "(A) ...", "[A] ...", "- A. ...", "* A) ...", "• (A) ..."
+    // Or numbered options: "1) ...", "(1) ...", "[1] ...", "- 1. ...", or "2. ...", "3. ...", "4. ..."
+    let optMatch = line.match(/^(?:[*•\-+]\s*)?(?:(?:\(?([A-Da-d])\)?[.:\s-]+)|(?:\[([A-Da-d])\][\s.:-]*))(.*)/);
+    if (!optMatch && currentQ && currentQ.options.length < 4) {
+      if (currentQ.options.length === 0) {
+        // First option with number: require paren/bracket/bullet, e.g. "1)", "(1)", "[1]", "- 1."
+        optMatch = line.match(/^(?:(?:[*•\-+]\s+(?:1[.:)\s-]))|(?:(?:\(?1\)[.:\s-]*)|(?:\[1\][\s.:-]*)))(.*)/);
+        if (optMatch) optMatch = [optMatch[0], '1', undefined, optMatch[1]];
+      } else {
+        // Subsequent options: "2.", "2)", "(2)", "[2]", etc.
+        const nextNum = currentQ.options.length + 1;
+        const numRegex = new RegExp(`^(?:[*•\\-+Found]\\s*)?(?:(?:\\(?(${nextNum})\\)?[.:\\s-]+)|(?:\\[(${nextNum})\\][\\s.:-]*))(.*)`);
+        optMatch = line.match(numRegex);
+      }
+    }
+
+    if (optMatch && currentQ) {
+      const optLetter = (optMatch[1] || optMatch[2] || 'A').toUpperCase();
+      let optText = (optMatch[3] !== undefined ? optMatch[3] : '').trim();
+
+      // Check if option line has an inline correctness indicator:
+      const isMarkedCorrect = /\((?:correct|answer|ans|right)\)/i.test(optText) ||
+                              /\[(?:correct|answer|ans|right)\]/i.test(optText) ||
+                              /^[✓✔]\s*/.test(optText) ||
+                              /\s*[✓✔]$/.test(optText) ||
+                              /^[✓✔]\s*/.test(rawTrimmed) ||
+                              /^\*\s+[A-Da-d1-4]/.test(rawTrimmed) ||
+                              /[^*]\*\s*$/.test(rawTrimmed) ||
+                              /\[x\]/i.test(rawTrimmed) ||
+                              /\(x\)/i.test(rawTrimmed);
+
+      if (isMarkedCorrect) {
+        currentQ.correctOptionIndex = currentQ.options.length;
+        optText = optText
+          .replace(/\((?:correct|answer|ans|right)\)/gi, '')
+          .replace(/\[(?:correct|answer|ans|right)\]/gi, '')
+          .replace(/[✓✔]/g, '')
+          .replace(/\s*\*+\s*$/, '')
+          .trim();
+      }
+
+      currentQ.options.push(optText || ('Option ' + optLetter));
+      continue;
+    }
+
+    // 4. Question start: "Q1. ...", "1. ...", "Question 1: ...", "### 1. ...", "1) ..."
     const qMatch = line.match(/^(?:(?:[Qq]uestion\s*\d+|Q\d+|\d+)[\s.:)-]+)(.+)/i);
     if (qMatch) {
       finalizeCurrentQ();
@@ -117,22 +233,6 @@ function parseAiQuestionsText(rawText) {
         explanation: '',
         revisionConcept: ''
       };
-      continue;
-    }
-
-    // 4. Option line: letters A-D only (or a-d)
-    const optMatch = line.match(/^(?:(?:\(?([A-Da-d])\)?[.:\s-]+)|(?:\[([A-Da-d])\][\s.:-]*))(.*)/);
-    if (optMatch && currentQ) {
-      const optLetter = (optMatch[1] || optMatch[2]).toUpperCase();
-      let optText = (optMatch[3] !== undefined ? optMatch[3] : '').trim();
-
-      // Check if option line has an indicator like (Correct), [Correct], (Ans), *
-      if (/\((?:correct|answer|ans|right)\)/i.test(optText) || /\[(?:correct|answer|ans|right)\]/i.test(optText) || optText.includes('*') || optText.startsWith('✓') || optText.startsWith('✔')) {
-        currentQ.correctOptionIndex = currentQ.options.length;
-        optText = optText.replace(/\((?:correct|answer|ans|right)\)/gi, '').replace(/\[(?:correct|answer|ans|right)\]/gi, '').replace(/[*✓✔]/g, '').trim();
-      }
-
-      currentQ.options.push(optText || ('Option ' + optLetter));
       continue;
     }
 
@@ -172,6 +272,16 @@ function parseAiQuestionsText(rawText) {
   }
 
   finalizeCurrentQ();
+
+  // If answerKeyMap has entries, assign to any questions that didn't have answers inline
+  if (Object.keys(answerKeyMap).length > 0) {
+    questions.forEach((q, idx) => {
+      const qNum = idx + 1;
+      if (answerKeyMap[qNum] !== undefined) {
+        q.correctOptionIndex = answerKeyMap[qNum];
+      }
+    });
+  }
 
   if (questions.length === 0) {
     questions.push({
@@ -350,14 +460,18 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Title, subject, duration, and at least one question are required.' });
     }
 
-    const validatedQuestions = questions.map((q, i) => ({
-      id: q.id || uuidv4(),
-      questionText: q.questionText,
-      options: q.options,
-      correctOptionIndex: parseInt(q.correctOptionIndex, 10),
-      explanation: q.explanation || 'No rationale provided.',
-      revisionConcept: q.revisionConcept || subject
-    }));
+    const validatedQuestions = questions.map((q, i) => {
+      const rawIdx = parseInt(q.correctOptionIndex, 10);
+      const validIdx = (Number.isInteger(rawIdx) && rawIdx >= 0 && rawIdx < (q.options ? q.options.length : 4)) ? rawIdx : 0;
+      return {
+        id: q.id || uuidv4(),
+        questionText: q.questionText,
+        options: q.options,
+        correctOptionIndex: validIdx,
+        explanation: q.explanation || 'No rationale provided.',
+        revisionConcept: q.revisionConcept || subject
+      };
+    });
 
     const newExam = await db.Exams.create({
       title: title.trim(),

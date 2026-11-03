@@ -11,7 +11,8 @@ import {
   CheckCircle2, 
   X, 
   RotateCcw,
-  BookOpen
+  BookOpen,
+  Sparkles
 } from 'lucide-react';
 import DisclaimerBanner from '../components/DisclaimerBanner';
 
@@ -42,6 +43,36 @@ export default function AdminExamManager() {
       }
     ]
   });
+
+  const [rawText, setRawText] = useState('');
+  const [parsingAi, setParsingAi] = useState(false);
+  const [showAiBox, setShowAiBox] = useState(false);
+
+  const handleParseAi = async () => {
+    if (!rawText.trim()) {
+      alert('Please paste questions text first.');
+      return;
+    }
+    setParsingAi(true);
+    try {
+      const res = await api.parseAiQuestions(rawText);
+      if (res.questions && res.questions.length > 0) {
+        setForm(prev => ({
+          ...prev,
+          questions: res.questions
+        }));
+        setRawText('');
+        setShowAiBox(false);
+        alert(`✨ Successfully formatted ${res.questions.length} questions and detected all answer keys!`);
+      } else {
+        alert('Could not detect questions in pasted text. Please verify formatting.');
+      }
+    } catch (err) {
+      alert(`AI parsing failed: ${err.message}`);
+    } finally {
+      setParsingAi(false);
+    }
+  };
 
   const loadExams = async () => {
     try {
@@ -369,21 +400,81 @@ export default function AdminExamManager() {
                   <h4 className="text-sm font-bold text-white">
                     Questions & Answer Keys ({form.questions.length})
                   </h4>
-                  <button
-                    type="button"
-                    onClick={handleAddQuestion}
-                    className="px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-slate-700 flex items-center space-x-1"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Add Question</span>
-                  </button>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowAiBox(!showAiBox)}
+                      className="px-3 py-1 rounded-lg text-xs font-bold bg-cyan-950/60 hover:bg-cyan-900/80 text-cyan-300 border border-cyan-700/60 flex items-center space-x-1 transition-all"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>{showAiBox ? 'Close AI Paste' : '⚡ AI Bulk Import'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleAddQuestion}
+                      className="px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-slate-700 flex items-center space-x-1"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Question</span>
+                    </button>
+                  </div>
                 </div>
+
+                {/* Collapsible AI Bulk Paste Area */}
+                {showAiBox && (
+                  <div className="p-4 rounded-2xl bg-slate-950 border border-cyan-800/60 space-y-3 animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-cyan-300 flex items-center space-x-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Paste Questions & Answer Keys:</span>
+                      </label>
+                      <span className="text-[10px] text-slate-400">Accepts any AI/ChatGPT format, (a)-(d), 1-4, or end-of-text Answer Keys</span>
+                    </div>
+                    <textarea
+                      rows={6}
+                      value={rawText}
+                      onChange={(e) => setRawText(e.target.value)}
+                      placeholder={`1. What is the primary function of an operating system?
+A. Compiling source code
+B. Managing hardware and software resources
+C. Designing graphic user interfaces
+D. Browsing the internet
+Answer: B
+Explanation: The OS manages resources.`}
+                      className="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-mono placeholder-slate-600 focus:outline-none focus:border-cyan-500"
+                    />
+                    <div className="flex items-center justify-end space-x-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowAiBox(false)}
+                        className="px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-slate-200"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        disabled={parsingAi || !rawText.trim()}
+                        onClick={handleParseAi}
+                        className="px-4 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 flex items-center space-x-1.5 disabled:opacity-50 transition-all cursor-pointer"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>{parsingAi ? 'Parsing Questions...' : '⚡ Format & Detect Answers'}</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-4 max-h-96 overflow-y-auto pr-1">
                   {form.questions.map((q, qIdx) => (
                     <div key={qIdx} className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-3 text-xs">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-slate-300 font-mono">Q{qIdx + 1}</span>
+                        <div className="flex items-center space-x-2">
+                          <span className="font-bold text-slate-300 font-mono">Q{qIdx + 1}</span>
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 flex items-center space-x-1">
+                            <span>✓ Correct:</span>
+                            <strong>Option {String.fromCharCode(65 + (q.correctOptionIndex || 0))}</strong>
+                          </span>
+                        </div>
                         {form.questions.length > 1 && (
                           <button
                             type="button"

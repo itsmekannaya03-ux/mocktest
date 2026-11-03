@@ -24,51 +24,51 @@
     "badgeId": "IRIS-ADMIN-02"
   },
   {
-    "_id": "fa1f1fb8-41ac-4b9c-afed-8dbe2df63ad6",
-    "createdAt": "2026-11-02T15:06:11.046Z",
-    "updatedAt": "2026-11-02T15:06:11.047Z",
+    "_id": "652b48b2-625d-41ce-af73-fd979658f513",
+    "createdAt": "2026-11-03T13:45:41.134Z",
+    "updatedAt": "2026-11-03T13:45:41.134Z",
     "name": "Rishith",
     "alias": "IRIS Operative",
-    "email": "rishith.463@iris.shield",
-    "password": "$2b$10$CJFAoL.UTgsy4HQh1.ivQOitQD2vyoNyXccZP7r7bqn8IvNehiA3a",
+    "email": "rishith.129@iris.shield",
+    "password": "$2b$10$iLeLk.ZjdPMblLNEugMIYux7.s1aAC7zz/sBfyOvOSJZ/z5LpJA2S",
     "role": "student",
     "clearance": "Level 3 - Operative",
-    "badgeId": "IRIS-MEMBER-463"
+    "badgeId": "IRIS-MEMBER-129"
   },
   {
-    "_id": "db60bd7a-9e02-464d-b301-8faf9cfa877a",
-    "createdAt": "2026-11-02T15:06:11.104Z",
-    "updatedAt": "2026-11-02T15:06:11.104Z",
+    "_id": "0c9b34fc-2dfc-45c6-8314-ecd6fe52b96d",
+    "createdAt": "2026-11-03T13:45:41.195Z",
+    "updatedAt": "2026-11-03T13:45:41.195Z",
     "name": "Arjun",
     "alias": "IRIS Operative",
-    "email": "arjun.389@iris.shield",
-    "password": "$2b$10$eXDVVX6cIpXEwp/sErUMM.VGhRgxH2WjjHVECfP1OdEKORyt/sFz2",
+    "email": "arjun.315@iris.shield",
+    "password": "$2b$10$AlBSj1vw3DQYIpw6hkqr/e7GGYhL6CL5SILzfMHFfdY5BIOffBiZO",
     "role": "student",
     "clearance": "Level 3 - Operative",
-    "badgeId": "IRIS-MEMBER-389"
+    "badgeId": "IRIS-MEMBER-315"
   },
   {
-    "_id": "696c0b03-4319-4595-afab-b6dd536487fd",
-    "createdAt": "2026-11-02T16:28:41.600Z",
-    "updatedAt": "2026-11-02T16:28:41.600Z",
+    "_id": "2d3d1001-c7af-4d38-9746-e3e5bfda62f2",
+    "createdAt": "2026-11-03T13:45:41.255Z",
+    "updatedAt": "2026-11-03T13:45:41.255Z",
     "name": "Rahul",
     "alias": "IRIS Operative",
-    "email": "rahul.951@iris.shield",
-    "password": "$2b$10$dmZv2iq.oWA2xmjuwWrxgOV1XffzsoEs7ZXgSlu9H2EeraVN1OtyO",
+    "email": "rahul.560@iris.shield",
+    "password": "$2b$10$y79jZhy0UGoO47ZDkb7XgOeIdDBGvTIWePhT.gdv.ckiBRLJKYzfy",
     "role": "student",
     "clearance": "Level 3 - Operative",
-    "badgeId": "IRIS-MEMBER-951"
+    "badgeId": "IRIS-MEMBER-560"
   },
   {
-    "_id": "a5db03d3-d4f3-491b-a1cf-97f36d250b3c",
-    "createdAt": "2026-11-02T16:28:41.675Z",
-    "updatedAt": "2026-11-02T16:28:41.675Z",
+    "_id": "d8e80152-abf1-407c-9aeb-b983b7b468f8",
+    "createdAt": "2026-11-03T13:45:41.315Z",
+    "updatedAt": "2026-11-03T13:45:41.315Z",
     "name": "Tony Stark",
     "alias": "IRIS Operative",
-    "email": "tonystark.421@iris.shield",
-    "password": "$2b$10$3DoSlkpSIstEswwAVsXsxOiYrhayngGhsrAhCZO1QsSrn1NUFoyJ6",
+    "email": "tonystark.915@iris.shield",
+    "password": "$2b$10$gN5vGWAgmeRdqn3OjJXZ7.LQ8vrfFAyBWGLGXQuPXy3K6HwyCh2Pi",
     "role": "student",
     "clearance": "Level 3 - Operative",
-    "badgeId": "IRIS-MEMBER-421"
+    "badgeId": "IRIS-MEMBER-915"
   }
 ]
